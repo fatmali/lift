@@ -4,7 +4,14 @@
  * There is no backend to sync with — all data lives in IndexedDB.
  */
 const CACHE = 'lift-v1';
-const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
+const SHELL = [
+  '/',
+  '/index.html',
+  '/manifest.webmanifest',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/fonts/archivo-latin.woff2',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

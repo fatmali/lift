@@ -78,7 +78,7 @@ export function Plan({ onToast }: { onToast: (msg: string) => void }) {
                 <div>
                   <div className="small" style={{ fontWeight: 580 }}>
                     {p.name}
-                    {active ? <span className="pill pill--data" style={{ marginLeft: 8 }}>Now</span> : null}
+                    {active ? <span className="pill" style={{ marginLeft: 8 }}>Now</span> : null}
                   </div>
                   <div className="tiny dim">{p.intent}</div>
                 </div>
@@ -426,7 +426,7 @@ export function Plan({ onToast }: { onToast: (msg: string) => void }) {
       </Sheet>
 
       <Sheet open={confirmReset} onClose={() => setConfirmReset(false)} title="Erase everything?">
-        <Notice tone="warn" icon="!">
+        <Notice tone="warn" icon={<Icon name="trash" size={15} />}>
           This deletes every session, record, measurement and preference on this device. It cannot
           be undone.
         </Notice>

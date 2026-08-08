@@ -4,15 +4,17 @@ import { Icon } from '../components/Icon';
 import { Empty, Notice, SectionHead, Stat } from '../components/Primitives';
 import { Sheet } from '../components/Sheet';
 import { getExercise } from '../data/exercises';
-import { BLOCK_WEEKS, DAY_BY_ID, PROGRAM, phaseForWeek } from '../data/program';
+import { BLOCK_WEEKS, DAY_BY_ID, PROGRAM, phaseForWeek, setsForWeek } from '../data/program';
 import {
   allPRs,
   completedSets,
   groupPRs,
   failureFlag,
   isCompleted,
+  lastPerformance,
   progressionQueue,
   sessionVolume,
+  topWeight,
 } from '../domain/progression';
 import {
   currentWeek,
@@ -28,11 +30,9 @@ import { num, plural, volume as fmtVolume } from '../lib/format';
 import { bodyweightOn, useStore } from '../store/useStore';
 import type { DayId } from '../types';
 
-const TONE: Record<DayId, string> = {
-  lowerA: 'var(--lowerA)',
-  upper: 'var(--upper)',
-  lowerB: 'var(--lowerB)',
-};
+/* Days differ by their letter mark and by type, not by hue — the only
+   colour in the palette is reserved for progression. */
+const CHALK = 'var(--accent)';
 
 export function Today({
   onStart,
@@ -63,6 +63,24 @@ export function Today({
     [sessions, settings.unit],
   );
   const ready = useMemo(() => progressionQueue(sessions).slice(0, 5), [sessions]);
+
+  const manifest = useMemo(() => {
+    if (!slotToday) return [];
+    const flagged = new Set(progressionQueue(sessions).map((r) => r.exerciseId));
+    return slotToday.day.slots.map((slot) => {
+      const exerciseId = store.variantChoice[slot.slotId] ?? slot.variants[0];
+      const last = lastPerformance(sessions, exerciseId);
+      return {
+        slotId: slot.slotId,
+        name: getExercise(exerciseId).name,
+        load: last ? topWeight(last.entry) : null,
+        sets: setsForWeek(slot.sets, shownWeek),
+        repMin: slot.repMin,
+        repMax: slot.repMax,
+        up: flagged.has(exerciseId),
+      };
+    });
+  }, [slotToday, sessions, store.variantChoice, shownWeek]);
   const flag = useMemo(() => failureFlag(sessions), [sessions]);
 
   const weekStart = startOfWeek(now);
@@ -83,14 +101,14 @@ export function Today({
           <div className="screen-head__eyebrow">{formatDate(now)}</div>
           <h1>Today</h1>
         </div>
-        <span className="pill pill--data">
+        <span className="pill num">
           Week {shownWeek} / {BLOCK_WEEKS}
         </span>
       </header>
 
       {week > BLOCK_WEEKS ? (
         <div style={{ marginBottom: 16 }}>
-          <Notice tone="pr" icon="✓">
+          <Notice tone="pr" icon={<Icon name="check" size={15} />}>
             You finished the 12-week block. Start a new one from Plan — same movements, new
             baselines.
           </Notice>
@@ -99,13 +117,44 @@ export function Today({
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       {slotToday && !doneToday ? (
-        <div className="hero" style={{ ['--tone' as string]: TONE[slotToday.day.id] }}>
+        <div className="hero" style={{ ['--tone' as string]: CHALK }}>
           <div className="hero__rule" />
-          <div className="hero__focus">{slotToday.day.focus}</div>
-          <h2 className="hero__title">{slotToday.day.name}</h2>
-          <p className="small muted" style={{ marginBottom: 18 }}>
-            {slotToday.day.slots.length} exercises · {phase.name} · {phase.rirLabel}
-          </p>
+          <div className="row-between" style={{ alignItems: 'flex-start' }}>
+            <div>
+              <div className="hero__focus">
+                {WEEKDAY_LONG[fromISODate(now).getDay()]} · {phase.name} · {phase.rirLabel}
+              </div>
+              <h2 className="hero__title">{slotToday.day.name}</h2>
+              <div className="tiny dim">{slotToday.day.focus}</div>
+            </div>
+            <span className="marker" style={{ flex: 'none' }}>
+              {slotToday.day.short}
+            </span>
+          </div>
+
+          <ul className="manifest">
+            {manifest.slice(0, 4).map((m) => (
+              <li key={m.slotId} className="manifest__row">
+                <span className="manifest__name">{m.name}</span>
+                <span
+                  className={`manifest__load num display ${
+                    m.up ? 'manifest__load--up' : m.load ? '' : 'manifest__load--empty'
+                  }`}
+                >
+                  {m.up ? <Icon name="arrowUp" size={11} /> : null}
+                  {m.load ? num(m.load) : '—'}
+                </span>
+                <span className="manifest__reps num">
+                  {m.sets}&times;{m.repMin}
+                  {m.repMax !== m.repMin ? `\u2013${m.repMax}` : ''}
+                </span>
+              </li>
+            ))}
+            {manifest.length > 4 ? (
+              <li className="manifest__more caps">+{manifest.length - 4} more exercises</li>
+            ) : null}
+          </ul>
+
           <button
             type="button"
             className="btn btn--primary btn--block"
@@ -122,7 +171,7 @@ export function Today({
           ) : null}
         </div>
       ) : doneToday ? (
-        <div className="hero" style={{ ['--tone' as string]: 'var(--done)' }}>
+        <div className="hero" style={{ ['--tone' as string]: CHALK }}>
           <div className="hero__rule" />
           <div className="hero__focus">Complete</div>
           <h2 className="hero__title">{DAY_BY_ID[doneToday.dayId].name} done</h2>
@@ -157,7 +206,7 @@ export function Today({
             </div>
             <span
               className="marker"
-              style={{ background: 'transparent', border: '1px solid var(--line)', color: TONE[next.day.id] }}
+              style={{ background: 'transparent', border: '1px solid var(--line)' }}
             >
               {next.day.short}
             </span>
@@ -169,9 +218,15 @@ export function Today({
       {missed.length ? (
         <div className="card" style={{ marginTop: 10 }}>
           <div className="small" style={{ marginBottom: 12 }}>
-            Missed {WEEKDAY_LONG[fromISODate(missed[0].date).getDay()]}. No drama — your next
-            session is{' '}
-            {next ? WEEKDAY_LONG[fromISODate(next.date).getDay()] : 'coming up'}.
+            {missed.length === 1
+              ? `Missed ${WEEKDAY_LONG[fromISODate(missed[0].date).getDay()]}.`
+              : `Missed ${missed.length} sessions.`}{' '}
+            No drama —{' '}
+            {!next
+              ? 'pick it back up whenever.'
+              : next.date === now
+                ? `${next.day.name} is ready when you are.`
+                : `your next session is ${WEEKDAY_LONG[fromISODate(next.date).getDay()]}.`}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
@@ -243,7 +298,7 @@ export function Today({
             <div className="list">
               {ready.map((r) => (
                 <div key={r.exerciseId} className="listitem">
-                  <span className="marker" style={{ background: 'var(--data-soft)', color: 'var(--data)' }}>
+                  <span className="marker" style={{ color: 'var(--text-2)' }}>
                     <Icon name="arrowUp" size={16} />
                   </span>
                   <span className="listitem__main">
@@ -253,8 +308,9 @@ export function Today({
                       {formatRelativeDay(r.date)}
                     </span>
                   </span>
-                  <span className="pill pill--data num">
-                    → {num(r.suggested)} {settings.unit}
+                  <span className="pill pill--pr num">
+                    <Icon name="arrowUp" size={12} />
+                    {num(r.suggested)} {settings.unit}
                   </span>
                 </div>
               ))}
@@ -289,7 +345,7 @@ export function Today({
             <div className="list">
               {prs.map((group) => (
                 <div key={group.key} className="listitem">
-                  <span className="marker" style={{ background: 'var(--pr-soft)', color: 'var(--pr)' }}>
+                  <span className="marker" style={{ color: 'var(--text-2)' }}>
                     <Icon name="trophy" size={15} />
                   </span>
                   <span className="listitem__main">
@@ -328,7 +384,7 @@ export function Today({
 
       {flag ? (
         <div style={{ marginTop: 16 }}>
-          <Notice tone="warn" icon="◔">
+          <Notice tone="warn" icon={<Icon name="timer" size={15} />}>
             You have taken {flag.count} of your last {flag.total} compound sets to failure. Training
             hard is the point; training to failure every time is a tax on recovery.
           </Notice>
@@ -373,9 +429,7 @@ export function Today({
                     {d.focus} · {d.slots.length} exercises
                   </div>
                 </div>
-                <span className="marker" style={{ color: TONE[d.id] }}>
-                  {d.short}
-                </span>
+                <span className="marker">{d.short}</span>
               </div>
             </button>
           ))}

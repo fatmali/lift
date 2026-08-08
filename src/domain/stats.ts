@@ -16,12 +16,15 @@ import { sessionsInWeek, weekCompletion } from './schedule';
 
 export interface SeriesPoint {
   date: string;
+  week: number;
   label: string;
   topWeight: number;
   e1rm: number;
   volume: number;
   reps: number;
   bestSet: string;
+  /** Rep string as logged, e.g. "10/10/9/8". */
+  sets: string;
 }
 
 export function exerciseSeries(sessions: Session[], exerciseId: string): SeriesPoint[] {
@@ -35,12 +38,14 @@ export function exerciseSeries(sessions: Session[], exerciseId: string): SeriesP
       const best = sets.reduce((a, b) => (b.reps > a.reps ? b : a));
       points.push({
         date: s.date,
+        week: s.week,
         label: formatShort(s.date),
         topWeight: topWeight(entry),
         e1rm: bestE1rm(entry),
         volume: Math.round(entryVolume(entry)),
         reps: totalReps(entry),
         bestSet: `${best.reps} × ${best.weight}`,
+        sets: sets.map((x) => x.reps).join('/'),
       });
     }
   }

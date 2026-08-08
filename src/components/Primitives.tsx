@@ -99,7 +99,7 @@ export function Notice({
   children,
 }: {
   tone?: 'default' | 'data' | 'pr' | 'warn';
-  icon?: string;
+  icon?: ReactNode;
   children: ReactNode;
 }) {
   return (

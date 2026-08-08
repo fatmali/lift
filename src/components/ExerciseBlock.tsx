@@ -126,7 +126,7 @@ export function ExerciseBlock({
       </div>
 
       {readySignal && !allDone && workingWeight === readySignal.weight ? (
-        <Notice tone="data" icon="⬆️">
+        <Notice tone="pr" icon={<Icon name="arrowUp" size={15} />}>
           You hit the top of the rep range last session ({readySignal.sets} × {readySignal.repMax} @{' '}
           {num(readySignal.weight)} {unit}). Consider {num(readySignal.suggested)} {unit} today —
           your call.

@@ -112,6 +112,30 @@ notifications require the app to be added to the Home Screen first.
 
 ## Design
 
-Dark, near-black ground; one warm off-white for primary action; one indigo for data; gold reserved
-for records. Large touch targets, tabular numerals, and no decoration that does not carry
-information — the app has to be readable at arm's length, mid-set, under bad gym lighting.
+**Direction: meet card.** The app is modelled on the artifact it replaces — a training ledger. The
+materials of the subject set the palette: iron, chalk, and calibrated plates.
+
+**Three colours.** Iron for ground and surfaces, chalk `#F2EEE6` for text, primary action *and*
+completed sets, and one accent — plate red `#C4362C`, the colour of a 25 kg disc. The accent is
+reserved **exclusively for progression**: ready-to-progress, personal records, load going up. It is
+never spent on chrome, navigation or state. When red appears on a screen, it is always because the
+numbers moved. Training days are told apart by their letter mark and their type, not by hue.
+
+**One typeface, three widths.** Archivo, self-hosted as a single variable file carrying both weight
+and width axes. Display runs wide and heavy (`wdth 116 / wght 700`) so loads read as stamped into
+metal; body sits at normal width; utility labels run narrow in caps like the column headings on a
+log sheet. The pairing is by width rather than by style, which is the training thesis in
+typographic form — the same movement, loaded heavier. Numerals are tabular throughout, because
+every screen in this app is a column of numbers that has to line up.
+
+**The load line.** The signature element: a lift's block history set as a ledger rather than a
+chart — the load stamped above a continuous rule, the reps and week beneath, and a red tick on the
+weeks the bar got heavier. It appears once, at the top of the selected lift in Progress, so it
+stays the thing the app is remembered by.
+
+**The hero is the manifest.** Today opens on the loads you are actually walking into, pulled from
+your last session, with an arrow against anything that topped its rep range — not on a greeting or
+a headline number.
+
+Everything else stays quiet: large touch targets, generous spacing, and no decoration that does not
+carry information. The app has to be readable at arm's length, mid-set, under bad gym lighting.

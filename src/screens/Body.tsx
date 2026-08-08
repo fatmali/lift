@@ -74,7 +74,7 @@ export function Body() {
         </div>
       </header>
 
-      <Notice icon="◇">
+      <Notice icon={<Icon name="scale" size={15} />}>
         These numbers are context, not the scoreboard. Recomposition means the scale can stay still
         while the mirror and the bar both move.
       </Notice>
@@ -386,7 +386,7 @@ function RecoverySheet({ open, onClose }: { open: boolean; onClose: () => void }
                 className={`chip ${sleep === h ? 'chip--on' : ''}`}
                 onClick={() => setSleep(h)}
               >
-                {h === 5 ? '≤5h' : h === 9 ? '9h+' : `${h}h`}
+                {h === 5 ? '<5h' : h === 9 ? '9h+' : `${h}h`}
               </button>
             ))}
           </div>

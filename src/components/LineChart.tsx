@@ -93,7 +93,11 @@ export function LineChart({
         </div>
         {points.length > 1 ? (
           <div className="tiny dim num" style={{ textAlign: 'right' }}>
-            {format(points[0].value)} → {format(points[points.length - 1].value)}
+            {format(points[0].value)}
+            <span aria-hidden="true" style={{ opacity: 0.5, padding: '0 5px' }}>
+              &#8594;
+            </span>
+            {format(points[points.length - 1].value)}
           </div>
         ) : null}
       </div>
@@ -112,7 +116,7 @@ export function LineChart({
       >
         <defs>
           <linearGradient id="lift-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--data)" stopOpacity="0.26" />
+            <stop offset="0%" stopColor="var(--data)" stopOpacity="0.15" />
             <stop offset="100%" stopColor="var(--data)" stopOpacity="0" />
           </linearGradient>
         </defs>

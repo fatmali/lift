@@ -40,7 +40,7 @@ export function ReadinessSheet({
                 className={`chip ${sleep === h ? 'chip--on' : ''}`}
                 onClick={() => setSleep(sleep === h ? null : h)}
               >
-                {h === 5 ? '≤5h' : h === 9 ? '9h+' : `${h}h`}
+                {h === 5 ? '<5h' : h === 9 ? '9h+' : `${h}h`}
               </button>
             ))}
           </div>

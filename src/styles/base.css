@@ -15,6 +15,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
+  font-stretch: var(--w-body);
   font-size: 16px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
@@ -38,6 +39,7 @@ input,
 select,
 textarea {
   font: inherit;
+  font-stretch: inherit;
   color: inherit;
 }
 
@@ -82,10 +84,21 @@ input[type='number'] {
   font-feature-settings: 'tnum' 1;
 }
 
-.mono-caps {
-  font-size: 11px;
+/*
+ * The three type roles. Display runs wide and heavy so loads read as stamped
+ * into metal; caps run narrow like the column headings on a log sheet.
+ */
+.display {
+  font-stretch: var(--w-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.caps {
+  font-stretch: var(--w-caps);
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-3);
 }

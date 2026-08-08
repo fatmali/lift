@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Icon } from '../components/Icon';
 import { LineChart } from '../components/LineChart';
+import { LoadLine, type LoadRecord } from '../components/LoadLine';
 import { Empty, SectionHead, Segmented, Stat } from '../components/Primitives';
 import { getExercise } from '../data/exercises';
 import { BLOCK_WEEKS, TRACKED_LIFTS } from '../data/program';
@@ -46,7 +47,14 @@ export function Progress() {
 
   const week = currentWeek(settings.blockStart, now);
   const shownWeek = Math.min(BLOCK_WEEKS, Math.max(1, week));
-  const [summaryWeek, setSummaryWeek] = useState(shownWeek);
+  // Follows the log until the athlete navigates away from it.
+  const lastLoggedWeek = useMemo(() => {
+    const weeks = finished.map((s) => s.week).filter((w) => w >= 1 && w <= BLOCK_WEEKS);
+    return weeks.length ? Math.max(...weeks) : shownWeek;
+  }, [finished, shownWeek]);
+  const [pickedWeek, setPickedWeek] = useState<number | null>(null);
+  const summaryWeek = pickedWeek ?? lastLoggedWeek;
+  const setSummaryWeek = (fn: (w: number) => number) => setPickedWeek(fn(summaryWeek));
 
   const prs = useMemo(() => allPRs(sessions, unit), [sessions, unit]);
   const prGroups = useMemo(() => groupPRs(prs), [prs]);
@@ -57,10 +65,15 @@ export function Progress() {
     () => (exerciseId ? exerciseSeries(finished, exerciseId) : []),
     [finished, exerciseId],
   );
-  const history = useMemo(
-    () => (exerciseId ? historyFor(finished, exerciseId).slice(0, 6) : []),
-    [finished, exerciseId],
-  );
+  const loadRecords = useMemo<LoadRecord[]>(() => {
+    const inverse = exerciseId ? getExercise(exerciseId).inverseLoad : false;
+    return series.map((p, i) => {
+      const before = series[i - 1]?.topWeight;
+      const up =
+        before !== undefined && (inverse ? p.topWeight < before : p.topWeight > before);
+      return { week: p.week, weight: p.topWeight, reps: p.sets, up };
+    });
+  }, [series, exerciseId]);
   const bests = useMemo(
     () => (exerciseId ? bestsFor(historyFor(finished, exerciseId)) : null),
     [finished, exerciseId],
@@ -152,6 +165,10 @@ export function Progress() {
             ))}
           </div>
 
+          <div style={{ marginBottom: 10 }}>
+            <LoadLine records={loadRecords} unit={unit} inverse={exercise.inverseLoad} />
+          </div>
+
           <div className="card">
             <Segmented options={metricOptions} value={activeMetric} onChange={setMetric} />
             <div style={{ marginTop: 16 }}>
@@ -185,32 +202,6 @@ export function Progress() {
             ) : null}
           </div>
 
-          <div className="card" style={{ marginTop: 10, padding: '4px 20px' }}>
-            <div className="list">
-              {history.map(({ session, entry }) => {
-                const sets = completedSets(entry);
-                return (
-                  <div key={session.id} className="listitem">
-                    <span className="listitem__main">
-                      <span className="listitem__title num">
-                        {num(Math.max(...sets.map((s) => s.weight)))} {unit} ·{' '}
-                        {sets.map((s) => s.reps).join(' / ')}
-                      </span>
-                      <span className="listitem__sub">
-                        {formatDate(session.date)} · week {session.week}
-                        {sets.some((s) => s.rir !== null)
-                          ? ` · RIR ${sets
-                              .filter((s) => s.rir !== null)
-                              .map((s) => (s.rir === 4 ? '4+' : s.rir))
-                              .join('/')}`
-                          : ''}
-                      </span>
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </section>
       ) : null}
 
@@ -293,7 +284,7 @@ export function Progress() {
                     className="progressline__fill"
                     style={{
                       width: `${ratio * 100}%`,
-                      background: ratio >= 1 ? 'var(--done)' : 'var(--data)',
+                      background: ratio >= 1 ? 'var(--accent)' : 'var(--text-3)',
                     }}
                   />
                 </div>
@@ -351,7 +342,7 @@ export function Progress() {
             <div className="list">
               {prGroups.slice(0, 25).map((group) => (
                 <div key={group.key} className="listitem">
-                  <span className="marker" style={{ background: 'var(--pr-soft)', color: 'var(--pr)' }}>
+                  <span className="marker" style={{ color: 'var(--text-2)' }}>
                     <Icon name="trophy" size={15} />
                   </span>
                   <span className="listitem__main">

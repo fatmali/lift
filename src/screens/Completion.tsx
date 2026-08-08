@@ -77,7 +77,7 @@ export function Completion({ sessionId, onDone }: { sessionId: string; onDone: (
               <div className="list">
                 {prGroups.map((group) => (
                   <div key={group.key} className="listitem">
-                    <span className="marker" style={{ background: 'var(--pr-soft)', color: 'var(--pr)' }}>
+                    <span className="marker" style={{ color: 'var(--text-2)' }}>
                       <Icon name="trophy" size={16} />
                     </span>
                     <span className="listitem__main">
@@ -139,7 +139,9 @@ export function Completion({ sessionId, onDone }: { sessionId: string; onDone: (
 
         {flag ? (
           <div className="notice notice--warn" style={{ marginTop: 20 }}>
-            <span className="notice__icon">◔</span>
+            <span className="notice__icon">
+              <Icon name="timer" size={15} />
+            </span>
             <span>
               {flag.count} of your last {flag.total} compound sets went to RIR 0. You do not need to
               destroy yourself to grow — leaving 1–2 reps in reserve on the big lifts recovers
@@ -154,11 +156,13 @@ export function Completion({ sessionId, onDone }: { sessionId: string; onDone: (
               <div>
                 <div className="label">Next workout</div>
                 <div className="mid" style={{ marginTop: 4 }}>
-                  {next
-                    ? `${WEEKDAY_LONG[fromISODate(next.date).getDay()]} → ${next.day.name}`
-                    : 'Block complete'}
+                  {next ? next.day.name : 'Block complete'}
                 </div>
-                {next ? <div className="tiny dim">{next.day.focus}</div> : null}
+                {next ? (
+                  <div className="tiny dim">
+                    {WEEKDAY_LONG[fromISODate(next.date).getDay()]} · {next.day.focus}
+                  </div>
+                ) : null}
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div className="label">This week</div>
@@ -191,8 +195,8 @@ const PR_LABEL: Record<string, string> = {
 };
 
 const TONE_COLOR: Record<string, string> = {
-  pr: 'var(--pr)',
-  up: 'var(--done)',
+  pr: 'var(--pr-ink)',
+  up: 'var(--pr-ink)',
   flat: 'var(--text-3)',
   down: 'var(--text-3)',
   new: 'var(--text-3)',
