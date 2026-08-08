@@ -35,6 +35,12 @@ export function daysBetween(a: string, b: string): number {
   return Math.round(ms / 86_400_000);
 }
 
+/** The next date falling on `weekday`; today counts if it already matches. */
+export function nextWeekday(weekday: number, from: string = today()): string {
+  const delta = (weekday - weekdayOf(from) + 7) % 7;
+  return addDays(from, delta);
+}
+
 export const WEEKDAY_LONG = [
   'Sunday',
   'Monday',

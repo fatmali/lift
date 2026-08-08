@@ -959,6 +959,14 @@
   pointer-events: none;
 }
 
+.restbar--tabs {
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--tabbar-h) + 10px);
+}
+
+.restbar--session {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 88px);
+}
+
 .restbar__inner {
   pointer-events: auto;
   position: relative;
@@ -1666,4 +1674,288 @@ textarea.input {
 .manifest__more {
   padding: 10px 0 0;
   color: var(--text-3);
+}
+
+/* ══ Responsive ═══════════════════════════════════════════════════════════
+ * Mobile is the default and stays exactly as it was. Wider screens get a
+ * persistent side rail instead of a bottom bar, a second content column, and
+ * sheets that behave like dialogs rather than thumb-reachable drawers.
+ */
+
+.sidenav {
+  display: none;
+}
+
+.exnav__name {
+  display: none;
+}
+
+.split,
+.split__main,
+.split__side {
+  display: contents;
+}
+
+/* ── Side rail replaces the tab bar ─────────────────────────────────────── */
+
+@media (min-width: 760px) {
+  .tabbar {
+    display: none;
+  }
+
+  .sidenav {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    width: 224px;
+    padding: 30px 14px calc(env(safe-area-inset-bottom) + 20px);
+    border-right: 1px solid var(--line);
+    background: var(--bg-soft);
+  }
+
+  .sidenav__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px 26px;
+    font-stretch: var(--w-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .sidelink {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    height: 44px;
+    padding: 0 12px;
+    border-radius: var(--r-md);
+    color: var(--text-3);
+    font-size: 14px;
+    font-weight: 550;
+    text-align: left;
+    transition:
+      background 0.16s var(--ease),
+      color 0.16s var(--ease);
+  }
+
+  .sidelink:hover {
+    color: var(--text-2);
+  }
+
+  .sidelink--on {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+
+  .sidenav__foot {
+    margin-top: auto;
+    padding: 0 12px;
+  }
+
+  .app {
+    max-width: none;
+    padding-left: 224px;
+  }
+
+  .screen {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 44px 32px 96px;
+  }
+
+  .restbar--tabs {
+    left: 224px;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
+
+  .toast {
+    left: calc(50% + 112px);
+  }
+
+  /* Sheets become centred dialogs once there is no thumb to reach with. */
+  .backdrop {
+    align-items: center;
+    padding: 24px;
+  }
+
+  .sheet {
+    max-width: 520px;
+    max-height: 82vh;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    padding-top: var(--sp-6);
+    animation: modal-in 0.28s var(--ease-out) both;
+  }
+
+  .sheet__grab {
+    display: none;
+  }
+
+  .complete {
+    padding-top: 72px;
+  }
+
+  .complete__inner {
+    max-width: 640px;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+}
+
+/* ── Two content columns ────────────────────────────────────────────────── */
+
+@media (min-width: 1080px) {
+  .screen {
+    max-width: 1080px;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+    gap: 28px;
+    align-items: start;
+  }
+
+  .split__main,
+  .split__side {
+    display: block;
+    min-width: 0;
+  }
+
+  /* Both columns must start on the same line. */
+  .split__main > *:first-child,
+  .split__side > *:first-child {
+    margin-top: 0;
+  }
+}
+
+/* ── Training mode gets a named exercise rail ───────────────────────────── */
+
+.session__headinner {
+  max-width: var(--app-w);
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .session__stage {
+    display: grid;
+    grid-template-columns: 270px minmax(0, 1fr);
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* The header reads as a top bar at this width, not a centred column. */
+  .session__headinner {
+    max-width: none;
+    padding: 0 8px;
+  }
+
+  .exnav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 18px 12px 40px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-right: 1px solid var(--line);
+  }
+
+  .exnav__item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 11px;
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0 12px;
+    border: none;
+    border-radius: var(--r-md);
+    background: transparent;
+    font-size: 13.5px;
+    font-weight: 520;
+    text-align: left;
+  }
+
+  .exnav__item--done {
+    border: none;
+  }
+
+  .exnav__item--on {
+    background: var(--surface-2);
+    border: none;
+    color: var(--text);
+  }
+
+  .exnav__num {
+    flex: none;
+    width: 20px;
+    font-stretch: var(--w-display);
+    font-weight: 700;
+    font-size: 12px;
+    opacity: 0.75;
+  }
+
+  .exnav__name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .session__body {
+    max-width: 600px;
+    padding: 32px 24px calc(200px + env(safe-area-inset-bottom));
+  }
+
+  /* Logging controls keep their thumb-sized proportions instead of stretching
+     across the column — a 600px-wide rep stepper helps nobody. */
+  .setrow {
+    grid-template-columns: 24px 92px minmax(0, 230px) 56px;
+    max-width: 430px;
+  }
+
+  .rir {
+    grid-template-columns: auto repeat(5, 64px);
+    justify-content: start;
+  }
+
+  .weightctl {
+    max-width: 402px;
+  }
+
+  .sessionfoot {
+    padding-left: 270px;
+  }
+
+  .sessionfoot__inner {
+    max-width: 600px;
+  }
+
+  .restbar--session {
+    left: 270px;
+  }
+}
+
+/* The side rail already carries the block position on wide screens. */
+@media (min-width: 760px) {
+  .week-pill {
+    display: none;
+  }
 }

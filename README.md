@@ -55,6 +55,21 @@ compound work to RIR 0 gets a gentle note, not a gold star.
 **Missed sessions are handled, not punished.** A missed day offers "train it today" or "move on",
 and a session shifted to another day of the same week still counts toward that week.
 
+The block begins on the next occurrence of its first training day rather than backdating to the
+Monday just gone — opening a fresh app to sessions already marked missed is a poor way to start.
+The first session date is editable in Plan; picking any date moves week 1 to that week.
+
+## Layout
+
+One codebase, two shapes. Below 760px it is a phone app: bottom tab bar, single column, bottom
+sheets. Above that the tab bar becomes a persistent side rail carrying the block position, sheets
+become centred dialogs, and at 1080px the content splits into two columns — what you act on today
+in the left, the log and reference in the right. Training mode swaps its numbered exercise strip
+for a named rail, while the logging controls keep their thumb-sized proportions rather than
+stretching across the column.
+
+Verified with no horizontal overflow from 320px to 1600px.
+
 ## Screens
 
 - **Today** — today's session, next session, week 2/3, week streak, ready-to-progress queue,

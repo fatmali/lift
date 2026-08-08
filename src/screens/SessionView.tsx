@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon';
 import { ReadinessSheet } from '../components/ReadinessSheet';
 import { RestBar } from '../components/RestBar';
 import { Sheet } from '../components/Sheet';
+import { getExercise } from '../data/exercises';
 import { DAY_BY_ID } from '../data/program';
 import { completedSets, sessionVolume } from '../domain/progression';
 import { duration, volume as fmtVolume } from '../lib/format';
@@ -53,7 +54,7 @@ export function SessionView({
   return (
     <div className="session">
       <header className="session__head">
-        <div style={{ maxWidth: 'var(--app-w)', margin: '0 auto', width: '100%' }}>
+        <div className="session__headinner">
           <div className="row-between">
             <button
               type="button"
@@ -90,26 +91,29 @@ export function SessionView({
         </div>
       </header>
 
-      <nav className="exnav" aria-label="Exercises">
-        {session.entries.map((e, i) => {
-          const done = completedSets(e).length >= e.targetSets;
-          return (
-            <button
-              key={e.slotId}
-              type="button"
-              className={`exnav__item ${i === index ? 'exnav__item--on' : done ? 'exnav__item--done' : ''}`}
-              onClick={() => setIndex(i)}
-              aria-label={`Exercise ${i + 1}`}
-              aria-current={i === index}
-            >
-              {i + 1}
-            </button>
-          );
-        })}
-      </nav>
+      <div className="session__stage">
+        <nav className="exnav" aria-label="Exercises">
+          {session.entries.map((e, i) => {
+            const done = completedSets(e).length >= e.targetSets;
+            return (
+              <button
+                key={e.slotId}
+                type="button"
+                className={`exnav__item ${i === index ? 'exnav__item--on' : done ? 'exnav__item--done' : ''}`}
+                onClick={() => setIndex(i)}
+                aria-label={`Exercise ${i + 1}: ${getExercise(e.exerciseId).name}`}
+                aria-current={i === index}
+              >
+                <span className="exnav__num num">{i + 1}</span>
+                <span className="exnav__name">{getExercise(e.exerciseId).name}</span>
+              </button>
+            );
+          })}
+        </nav>
 
-      <div className="session__body" key={entry.slotId}>
-        {slot ? <ExerciseBlock session={session} entry={entry} slot={slot} /> : null}
+        <div className="session__body" key={entry.slotId}>
+          {slot ? <ExerciseBlock session={session} entry={entry} slot={slot} /> : null}
+        </div>
       </div>
 
       <div className="sessionfoot">

@@ -148,6 +148,8 @@ export function Progress() {
         </div>
       ) : null}
 
+<div className="split">
+        <div className="split__main">
       {/* ── Strength progression ─────────────────────────────────────── */}
       {exerciseId && exercise ? (
         <section className="section">
@@ -205,6 +207,9 @@ export function Progress() {
         </section>
       ) : null}
 
+</div>
+
+        <div className="split__side">
       {/* ── Weekly summary ───────────────────────────────────────────── */}
       <section className="section">
         <SectionHead
@@ -360,6 +365,9 @@ export function Progress() {
           <Empty title="No PRs yet" body="They arrive on their own once the numbers start moving." />
         )}
       </section>
+</div>
+      </div>
+
     </div>
   );
 }

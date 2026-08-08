@@ -31,17 +31,10 @@ export function RestBar({ stacked = false }: { stacked?: boolean }) {
 
   const progress = duration > 0 ? Math.min(1, Math.max(0, 1 - remaining / duration)) : 1;
 
+  // Floats clear of whatever sits at the bottom: the session footer while
+  // training, the tab bar (or nothing, on desktop) everywhere else.
   return (
-    <div
-      className="restbar"
-      style={{
-        // Float clear of whatever sits at the bottom: the session footer while
-        // training, the tab bar everywhere else.
-        paddingBottom: stacked
-          ? 'calc(env(safe-area-inset-bottom) + 88px)'
-          : 'calc(env(safe-area-inset-bottom) + var(--tabbar-h) + 10px)',
-      }}
-    >
+    <div className={`restbar ${stacked ? 'restbar--session' : 'restbar--tabs'}`}>
       <div className={`restbar__inner ${done ? 'restbar--done' : ''}`}>
         <div className="restbar__fill" style={{ width: `${progress * 100}%` }} />
         <div className="restbar__content">

@@ -1,7 +1,22 @@
 import { BLOCK_WEEKS, DAY_BY_ID, PROGRAM } from '../data/program';
-import { addDays, daysBetween, startOfWeek, today as todayISO } from '../lib/date';
+import { addDays, daysBetween, nextWeekday, startOfWeek, today as todayISO } from '../lib/date';
 import type { DayId, Session, WorkoutDay } from '../types';
 import { isCompleted } from './progression';
+
+/**
+ * Week 1 starts on the week containing the next occurrence of the block's
+ * first training day. Backdating to the Monday just gone would open the app
+ * with sessions already marked missed, which is a poor way to begin.
+ */
+export function defaultBlockStart(from: string = todayISO()): string {
+  const firstTrainingDay = Math.min(...PROGRAM.map((d) => d.weekday));
+  return startOfWeek(nextWeekday(firstTrainingDay, from));
+}
+
+/** False until the block's first week actually begins. */
+export function hasBlockStarted(blockStart: string, date: string = todayISO()): boolean {
+  return currentWeek(blockStart, date) >= 1;
+}
 
 /** Monday-offset of a day's weekday (Tue = 1, Thu = 3, Sat = 5). */
 const mondayOffset = (weekday: number) => (weekday + 6) % 7;

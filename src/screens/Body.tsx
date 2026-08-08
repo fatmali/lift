@@ -79,6 +79,8 @@ export function Body() {
         while the mirror and the bar both move.
       </Notice>
 
+<div className="split">
+        <div className="split__main">
       {/* ── Measurements ─────────────────────────────────────────────── */}
       <section className="section">
         <SectionHead
@@ -152,6 +154,9 @@ export function Body() {
         )}
       </section>
 
+</div>
+
+        <div className="split__side">
       {/* ── Photos ───────────────────────────────────────────────────── */}
       <section className="section">
         <SectionHead
@@ -341,6 +346,9 @@ export function Body() {
           />
         )}
       </section>
+
+</div>
+      </div>
 
       <AddMeasurement
         open={addOpen}

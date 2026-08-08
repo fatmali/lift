@@ -19,13 +19,23 @@ import {
 import {
   currentWeek,
   displayWeek,
+  hasBlockStarted,
   missedSlots,
   nextSlot,
   todaysSlot,
   weekCompletion,
   weekStreak,
 } from '../domain/schedule';
-import { WEEKDAY_LONG, addDays, formatDate, formatRelativeDay, fromISODate, startOfWeek, today as todayISO } from '../lib/date';
+import {
+  WEEKDAY_LONG,
+  addDays,
+  daysBetween,
+  formatDate,
+  formatRelativeDay,
+  fromISODate,
+  startOfWeek,
+  today as todayISO,
+} from '../lib/date';
 import { num, plural, volume as fmtVolume } from '../lib/format';
 import { bodyweightOn, useStore } from '../store/useStore';
 import type { DayId } from '../types';
@@ -48,15 +58,18 @@ export function Today({
   const [cardioOpen, setCardioOpen] = useState(false);
 
   const week = currentWeek(settings.blockStart, now);
+  const started = hasBlockStarted(settings.blockStart, now);
   const shownWeek = displayWeek(settings.blockStart, now);
   const phase = phaseForWeek(shownWeek);
   const slotToday = todaysSlot(settings.blockStart, sessions, now);
   const next = nextSlot(settings.blockStart, sessions, now);
   const completion = weekCompletion(shownWeek, settings.blockStart, sessions, now);
   const streak = weekStreak(settings.blockStart, sessions, now);
-  const missed = missedSlots(settings.blockStart, sessions, now).filter(
-    (s) => s.date >= addDays(now, -6) && !store.dismissed.includes(`missed-${s.date}`),
-  );
+  const missed = !started
+    ? []
+    : missedSlots(settings.blockStart, sessions, now).filter(
+        (s) => s.date >= addDays(now, -6) && !store.dismissed.includes(`missed-${s.date}`),
+      );
 
   const prs = useMemo(
     () => groupPRs(allPRs(sessions, settings.unit)).slice(0, 4),
@@ -101,7 +114,7 @@ export function Today({
           <div className="screen-head__eyebrow">{formatDate(now)}</div>
           <h1>Today</h1>
         </div>
-        <span className="pill num">
+        <span className="pill num week-pill">
           Week {shownWeek} / {BLOCK_WEEKS}
         </span>
       </header>
@@ -115,6 +128,8 @@ export function Today({
         </div>
       ) : null}
 
+<div className="split">
+        <div className="split__main">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       {slotToday && !doneToday ? (
         <div className="hero" style={{ ['--tone' as string]: CHALK }}>
@@ -181,6 +196,37 @@ export function Today({
             {plural(doneToday.entries.filter((e) => completedSets(e).length).length, 'exercise')}
           </p>
         </div>
+      ) : !started && next ? (
+        <div className="hero" style={{ ['--tone' as string]: CHALK }}>
+          <div className="hero__rule" />
+          <div className="hero__focus">
+            Block 1 · starts in {plural(daysBetween(now, next.date), 'day')}
+          </div>
+          <h2 className="hero__title">{next.day.name}</h2>
+          <div className="tiny dim">
+            {WEEKDAY_LONG[fromISODate(next.date).getDay()]} {formatDate(next.date).slice(4)} ·{' '}
+            {next.day.focus}
+          </div>
+          <ul className="manifest">
+            {PROGRAM.map((d) => (
+              <li key={d.id} className="manifest__row">
+                <span className="manifest__name">{d.name}</span>
+                <span className="manifest__load num display manifest__load--empty">
+                  {WEEKDAY_LONG[d.weekday].slice(0, 3)}
+                </span>
+                <span className="manifest__reps num">{d.slots.length} ex</span>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            className="btn btn--ghost btn--block"
+            onClick={() => onNavigate('plan')}
+          >
+            Read the plan
+            <Icon name="chevron" size={17} />
+          </button>
+        </div>
       ) : (
         <div className="hero" style={{ ['--tone' as string]: 'var(--text-3)' }}>
           <div className="hero__rule" />
@@ -193,7 +239,7 @@ export function Today({
       )}
 
       {/* ── Next ─────────────────────────────────────────────────────── */}
-      {next && (!slotToday || doneToday || next.date !== now) ? (
+      {next && started && (!slotToday || doneToday || next.date !== now) ? (
         <div className="card" style={{ marginTop: 10 }}>
           <div className="row-between">
             <div>
@@ -249,46 +295,27 @@ export function Today({
 
       {/* ── Stats ────────────────────────────────────────────────────── */}
       <div className="statgrid" style={{ marginTop: 10 }}>
-        <Stat
-          value={`${completion.done}/${completion.total}`}
-          label="This week"
-          tone={completion.done === completion.total ? 'done' : undefined}
-        />
-        <Stat value={streak} label={streak === 1 ? 'Week streak' : 'Weeks streak'} />
-        <Stat value={fmtVolume(weekVolume)} unit={settings.unit} label="Week volume" />
+        {started ? (
+          <>
+            <Stat
+              value={`${completion.done}/${completion.total}`}
+              label="This week"
+              tone={completion.done === completion.total ? 'done' : undefined}
+            />
+            <Stat value={streak} label={streak === 1 ? 'Week streak' : 'Weeks streak'} />
+            <Stat value={fmtVolume(weekVolume)} unit={settings.unit} label="Week volume" />
+          </>
+        ) : (
+          <>
+            <Stat value={BLOCK_WEEKS} label="Weeks" />
+            <Stat value={PROGRAM.length} label="Days a week" />
+            <Stat
+              value={PROGRAM.reduce((n, d) => n + d.slots.length, 0)}
+              label="Movements"
+            />
+          </>
+        )}
       </div>
-
-      {/* ── Block progress ───────────────────────────────────────────── */}
-      <section className="section">
-        <SectionHead
-          title="12-week block"
-          action={
-            <button type="button" className="section__action" onClick={() => onNavigate('plan')}>
-              Plan
-            </button>
-          }
-        />
-        <div className="card card--quiet">
-          <div className="row-between">
-            <div>
-              <div className="mid">{phase.name}</div>
-              <div className="tiny dim" style={{ marginTop: 2, maxWidth: '30ch' }}>
-                {phase.intent}
-              </div>
-            </div>
-            <span className="pill">{phase.rirLabel}</span>
-          </div>
-          <div className="weekdots" aria-label={`Week ${shownWeek} of ${BLOCK_WEEKS}`}>
-            {Array.from({ length: BLOCK_WEEKS }, (_, i) => {
-              const w = i + 1;
-              const { done, total } = weekCompletion(w, settings.blockStart, sessions, now);
-              const cls =
-                w === shownWeek ? 'weekdot--now' : done >= total && total > 0 ? 'weekdot--done' : '';
-              return <span key={w} className={`weekdot ${cls}`} />;
-            })}
-          </div>
-        </div>
-      </section>
 
       {/* ── Ready to progress ────────────────────────────────────────── */}
       <section className="section">
@@ -322,6 +349,41 @@ export function Today({
             body="When you hit the top of the rep range on every set of an exercise, it shows up here. You decide when to add weight."
           />
         )}
+      </section>
+
+</div>
+
+        <div className="split__side">
+      {/* ── Block progress ───────────────────────────────────────────── */}
+      <section className="section">
+        <SectionHead
+          title="12-week block"
+          action={
+            <button type="button" className="section__action" onClick={() => onNavigate('plan')}>
+              Plan
+            </button>
+          }
+        />
+        <div className="card card--quiet">
+          <div className="row-between">
+            <div>
+              <div className="mid">{phase.name}</div>
+              <div className="tiny dim" style={{ marginTop: 2, maxWidth: '30ch' }}>
+                {phase.intent}
+              </div>
+            </div>
+            <span className="pill">{phase.rirLabel}</span>
+          </div>
+          <div className="weekdots" aria-label={`Week ${shownWeek} of ${BLOCK_WEEKS}`}>
+            {Array.from({ length: BLOCK_WEEKS }, (_, i) => {
+              const w = i + 1;
+              const { done, total } = weekCompletion(w, settings.blockStart, sessions, now);
+              const cls =
+                w === shownWeek ? 'weekdot--now' : done >= total && total > 0 ? 'weekdot--done' : '';
+              return <span key={w} className={`weekdot ${cls}`} />;
+            })}
+          </div>
+        </div>
       </section>
 
       {/* ── Recent PRs ───────────────────────────────────────────────── */}
@@ -408,6 +470,9 @@ export function Today({
         >
           Log body data
         </button>
+      </div>
+
+</div>
       </div>
 
       <Sheet open={pickDay} onClose={() => setPickDay(false)} title="Which session?">

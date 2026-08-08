@@ -2,10 +2,10 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { getExercise } from '../data/exercises';
 import { DAY_BY_ID, setsForWeek } from '../data/program';
-import { startOfWeek, today as todayISO } from '../lib/date';
+import { today as todayISO } from '../lib/date';
 import { uid } from '../lib/format';
 import { completedSets, lastPerformance } from '../domain/progression';
-import { currentWeek } from '../domain/schedule';
+import { currentWeek, defaultBlockStart } from '../domain/schedule';
 import type {
   AppState,
   CardioSession,
@@ -24,7 +24,7 @@ import { idbStorage, putPhoto, removePhoto } from './storage';
 
 const defaultSettings = (): Settings => ({
   unit: 'kg',
-  blockStart: startOfWeek(todayISO()),
+  blockStart: defaultBlockStart(),
   restCompound: 150,
   restIsolation: 90,
   autoStartRest: true,

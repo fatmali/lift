@@ -4,7 +4,7 @@ import { Notice, SectionHead, Switch } from '../components/Primitives';
 import { Sheet } from '../components/Sheet';
 import { getExercise } from '../data/exercises';
 import { BLOCK_WEEKS, PHASES, PROGRAM, REMINDER_COPY, setsForWeek } from '../data/program';
-import { currentWeek } from '../domain/schedule';
+import { currentWeek, dateForDay, defaultBlockStart, hasBlockStarted } from '../domain/schedule';
 import { WEEKDAY_LONG, formatDate, startOfWeek, today as todayISO } from '../lib/date';
 import { clock } from '../lib/format';
 import { permission, requestPermission } from '../lib/notify';
@@ -23,7 +23,11 @@ export function Plan({ onToast }: { onToast: (msg: string) => void }) {
   const importRef = useRef<HTMLInputElement>(null);
   const [notifState, setNotifState] = useState(permission());
 
-  const week = currentWeek(settings.blockStart, todayISO());
+  const now = todayISO();
+  const week = currentWeek(settings.blockStart, now);
+  const started = hasBlockStarted(settings.blockStart, now);
+  const firstSession = dateForDay(1, PROGRAM[0].id, settings.blockStart);
+  const lastSession = dateForDay(BLOCK_WEEKS, PROGRAM[PROGRAM.length - 1].id, settings.blockStart);
   const day = openDay ? PROGRAM.find((d) => d.id === openDay) : null;
 
   const exportData = () => {
@@ -55,20 +59,45 @@ export function Plan({ onToast }: { onToast: (msg: string) => void }) {
         </div>
       </header>
 
+<div className="split">
+        <div className="split__main">
       {/* ── Block ────────────────────────────────────────────────────── */}
       <div className="card">
         <div className="row-between">
           <div>
-            <div className="label">Current block</div>
+            <div className="label">{started ? 'Current block' : 'Upcoming block'}</div>
             <div className="mid" style={{ marginTop: 3 }}>
-              Week {Math.min(BLOCK_WEEKS, Math.max(1, week))} of {BLOCK_WEEKS}
+              {started ? `Week ${Math.min(BLOCK_WEEKS, Math.max(1, week))} of ${BLOCK_WEEKS}` : 'Not started'}
             </div>
-            <div className="tiny dim">Started {formatDate(settings.blockStart)}</div>
+            <div className="tiny dim">
+              {formatDate(firstSession)} — {formatDate(lastSession)}
+            </div>
           </div>
           <button type="button" className="btn btn--ghost btn--sm" onClick={() => setConfirmBlock(true)}>
-            <Icon name="refresh" size={15} /> Restart
+            <Icon name="refresh" size={15} /> Reset
           </button>
         </div>
+
+        <div className="divider" />
+
+        <div className="field">
+          <span className="field__label">First session</span>
+          <input
+            className="input num"
+            type="date"
+            value={firstSession}
+            onChange={(e) => {
+              if (!e.target.value) return;
+              // Week 1 is anchored to the Monday of whichever week you pick.
+              store.updateSettings({ blockStart: startOfWeek(e.target.value) });
+            }}
+          />
+          <span className="tiny dim">
+            Training days stay {PROGRAM.map((d) => WEEKDAY_LONG[d.weekday].slice(0, 3)).join(' · ')}.
+            Picking any date moves the block to that week.
+          </span>
+        </div>
+
         <div className="divider" />
         <div className="stack" style={{ gap: 10 }}>
           {PHASES.map((p) => {
@@ -125,6 +154,9 @@ export function Plan({ onToast }: { onToast: (msg: string) => void }) {
         </p>
       </section>
 
+</div>
+
+        <div className="split__side">
       {/* ── Training preferences ─────────────────────────────────────── */}
       <section className="section">
         <SectionHead title="Training" />
@@ -362,6 +394,9 @@ export function Plan({ onToast }: { onToast: (msg: string) => void }) {
         </div>
       </section>
 
+</div>
+      </div>
+
       {/* ── Day detail ───────────────────────────────────────────────── */}
       <Sheet open={Boolean(day)} onClose={() => setOpenDay(null)} title={day ? day.name : ''}>
         {day ? (
@@ -398,22 +433,23 @@ export function Plan({ onToast }: { onToast: (msg: string) => void }) {
         ) : null}
       </Sheet>
 
-      <Sheet open={confirmBlock} onClose={() => setConfirmBlock(false)} title="Restart the block?">
+      <Sheet open={confirmBlock} onClose={() => setConfirmBlock(false)} title="Reset the block?">
         <p className="muted small" style={{ marginBottom: 18 }}>
-          Week 1 will begin on {formatDate(startOfWeek(todayISO()))}. Your full training history,
-          records and measurements are kept — only the block calendar moves.
+          Week 1 will move to {formatDate(dateForDay(1, PROGRAM[0].id, defaultBlockStart(now)))}, the
+          next {WEEKDAY_LONG[PROGRAM[0].weekday]}. Your training history, records and measurements
+          are kept — only the block calendar moves.
         </p>
         <div className="stack">
           <button
             type="button"
             className="btn btn--primary btn--block"
             onClick={() => {
-              store.updateSettings({ blockStart: startOfWeek(todayISO()) });
+              store.updateSettings({ blockStart: defaultBlockStart(now) });
               setConfirmBlock(false);
-              onToast('New block started at week 1');
+              onToast('Block reset to week 1');
             }}
           >
-            Start a new block
+            Reset to week 1
           </button>
           <button
             type="button"
