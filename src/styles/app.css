@@ -599,9 +599,10 @@
 
 .session__body {
   flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: var(--sp-4) 16px calc(190px + env(safe-area-inset-bottom));
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  padding: 0;
   max-width: var(--app-w);
   width: 100%;
   margin: 0 auto;
@@ -1843,6 +1844,12 @@ textarea.input {
 
 /* ── Training mode gets a named exercise rail ───────────────────────────── */
 
+/* On narrow screens the rail and the body are simply stacked flex children of
+   the session, so the body can fill the height the zone is pinned inside. */
+.session__stage {
+  display: contents;
+}
+
 .session__headinner {
   max-width: var(--app-w);
   margin: 0 auto;
@@ -1920,8 +1927,11 @@ textarea.input {
   }
 
   .session__body {
-    max-width: 600px;
-    padding: 32px 24px calc(200px + env(safe-area-inset-bottom));
+    max-width: 640px;
+  }
+
+  .exercise__head {
+    padding: 26px 24px 24px;
   }
 
   /* Logging controls keep their thumb-sized proportions instead of stretching
@@ -1957,5 +1967,343 @@ textarea.input {
 @media (min-width: 760px) {
   .week-pill {
     display: none;
+  }
+}
+
+/* ══ Gym mode ═════════════════════════════════════════════════════════════
+ * The bottom of the training screen is one control that never moves. It only
+ * changes state — log the set, wait out the rest, move on — so the thing to
+ * do next is always in the same place, always the largest thing on screen,
+ * and always within thumb reach.
+ */
+
+.exercise {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.exercise__head {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 16px 20px;
+}
+
+.exercise__meta {
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+
+.exercise__meta strong {
+  font-stretch: var(--w-caps);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-right: 5px;
+}
+
+.exercise__tools {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+/* ── Set chips ──────────────────────────────────────────────────────────── */
+
+.setchips {
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.setchip {
+  width: 100%;
+  height: 58px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  transition:
+    background 0.16s var(--ease),
+    border-color 0.16s var(--ease);
+}
+
+.setchip__n {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+.setchip__v {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-3);
+}
+
+.setchip--done {
+  background: var(--surface-3);
+}
+
+.setchip--done .setchip__v {
+  color: var(--text);
+}
+
+.setchip--on {
+  border-color: var(--line-strong);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.setchip--on .setchip__v {
+  color: var(--text);
+}
+
+/* ── The zone ───────────────────────────────────────────────────────────── */
+
+.zone {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+  background: var(--bg-soft);
+}
+
+.zone__body {
+  position: relative;
+  padding: 14px 16px calc(env(safe-area-inset-bottom) + 14px);
+  max-width: var(--app-w);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.zone__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--surface-2);
+  transition: width 0.4s linear;
+}
+
+.zone__label {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* Weight and reps dials — 64px targets either side of a large readout. */
+
+.dialrow {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr) 66px;
+  gap: 8px;
+  height: 62px;
+  margin-bottom: 8px;
+}
+
+.dial__btn {
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  transition: background 0.14s var(--ease);
+}
+
+.dial__btn:active {
+  background: var(--surface-3);
+}
+
+.dial__value {
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  min-width: 0;
+}
+
+.dial__value .display {
+  font-size: 28px;
+  line-height: 62px;
+}
+
+.dial__value--static {
+  background: transparent;
+  border-color: transparent;
+}
+
+.dial__unit {
+  font-size: 12.5px;
+  color: var(--text-3);
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+/* The commit target: a zone, not a button. */
+
+.zone__commit {
+  width: 100%;
+  height: 98px;
+  margin-top: 6px;
+  border-radius: var(--r-lg);
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-stretch: var(--w-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.1s var(--ease);
+}
+
+.zone__commit:active {
+  transform: scale(0.985);
+}
+
+.zone__hint {
+  margin-top: 9px;
+  text-align: center;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+}
+
+/* ── Resting ────────────────────────────────────────────────────────────── */
+
+.zone__clock {
+  text-align: center;
+  font-size: 66px;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+.zone--rest-done .zone__clock {
+  color: var(--done);
+}
+
+.zone__next {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.zone__rir {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.zone__rirrow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.zone__rirrow .rir__opt {
+  height: 46px;
+}
+
+.zone__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.zone__actions .btn {
+  flex: 1;
+  height: 56px;
+}
+
+.zone__actions .btn--ghost {
+  flex: 0 0 auto;
+  min-width: 78px;
+}
+
+.zone__cta {
+  flex: 2;
+}
+
+.zone__msg {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 560;
+  color: var(--pr-ink);
+  margin-bottom: 4px;
+}
+
+/* ── Numpad ─────────────────────────────────────────────────────────────── */
+
+.numpad__display {
+  text-align: center;
+  font-size: 46px;
+  line-height: 1.1;
+  margin: -6px 0 12px;
+}
+
+.numpad__unit {
+  font-size: 15px;
+  color: var(--text-3);
+  margin-left: 6px;
+  font-weight: 550;
+}
+
+.numpad__quick {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.numpad__quick .chip {
+  justify-content: center;
+  height: 42px;
+}
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.numpad__key {
+  height: 62px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-stretch: var(--w-display);
+  font-size: 24px;
+  font-weight: 700;
+  transition: background 0.12s var(--ease);
+}
+
+.numpad__key:active {
+  background: var(--surface-3);
+}
+
+@media (min-width: 900px) {
+  .zone__body {
+    max-width: 600px;
+    padding-left: 24px;
+    padding-right: 24px;
   }
 }

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ExerciseBlock } from '../components/ExerciseBlock';
 import { Icon } from '../components/Icon';
 import { ReadinessSheet } from '../components/ReadinessSheet';
-import { RestBar } from '../components/RestBar';
+import { useWakeLock } from '../hooks/useWakeLock';
 import { Sheet } from '../components/Sheet';
 import { getExercise } from '../data/exercises';
 import { DAY_BY_ID } from '../data/program';
@@ -29,6 +29,8 @@ export function SessionView({
     () => store.settings.askReadiness && !session?.readiness,
   );
   const now = useTick(true);
+  // The screen must not sleep between sets.
+  useWakeLock(true);
 
   const day = session ? DAY_BY_ID[session.dayId] : null;
   const bodyweight = useMemo(
@@ -112,44 +114,17 @@ export function SessionView({
         </nav>
 
         <div className="session__body" key={entry.slotId}>
-          {slot ? <ExerciseBlock session={session} entry={entry} slot={slot} /> : null}
-        </div>
-      </div>
-
-      <div className="sessionfoot">
-        <div className="sessionfoot__inner">
-          {index > 0 ? (
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={() => setIndex((i) => i - 1)}
-              aria-label="Previous exercise"
-            >
-              <Icon name="back" size={18} />
-            </button>
+          {slot ? (
+            <ExerciseBlock
+              session={session}
+              entry={entry}
+              slot={slot}
+              isLastExercise={isLast}
+              onNext={() => (isLast ? setConfirmFinish(true) : setIndex((i) => i + 1))}
+            />
           ) : null}
-          {isLast ? (
-            <button
-              type="button"
-              className="btn btn--primary btn--block"
-              onClick={() => (anythingLogged ? setConfirmFinish(true) : onExit())}
-            >
-              Finish workout
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="btn btn--primary btn--block"
-              onClick={() => setIndex((i) => i + 1)}
-            >
-              Next exercise
-              <Icon name="chevron" size={17} />
-            </button>
-          )}
         </div>
       </div>
-
-      <RestBar stacked />
 
       <ReadinessSheet
         open={askReadiness}
@@ -160,20 +135,31 @@ export function SessionView({
         }}
       />
 
-      <Sheet open={confirmExit} onClose={() => setConfirmExit(false)} title="Pause this session?">
+      <Sheet open={confirmExit} onClose={() => setConfirmExit(false)} title="Stop here?">
         <p className="muted small" style={{ marginBottom: 20 }}>
-          Everything you logged is saved. Pick it back up from Today whenever you're ready.
+          {totalDone} sets logged. Pausing keeps the session open to pick back up; finishing files
+          it and works out your records.
         </p>
         <div className="stack">
-          <button type="button" className="btn btn--primary btn--block" onClick={onExit}>
+          <button
+            type="button"
+            className="btn btn--primary btn--block"
+            onClick={() => setConfirmExit(false)}
+          >
+            Keep training
+          </button>
+          <button type="button" className="btn btn--ghost btn--block" onClick={onExit}>
             Pause and save
           </button>
           <button
             type="button"
-            className="btn btn--quiet btn--block"
-            onClick={() => setConfirmExit(false)}
+            className="btn btn--ghost btn--block"
+            onClick={() => {
+              setConfirmExit(false);
+              setConfirmFinish(true);
+            }}
           >
-            Keep training
+            Finish workout now
           </button>
         </div>
       </Sheet>

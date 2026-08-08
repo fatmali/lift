@@ -1,7 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getExercise } from '../data/exercises';
 import { phaseForWeek } from '../data/program';
-import { formatRelativeDay } from '../lib/date';
 import { clock, num } from '../lib/format';
 import { primeAudio } from '../lib/notify';
 import {
@@ -11,27 +10,33 @@ import {
   readyToProgress,
 } from '../domain/progression';
 import { restForExercise, useStore } from '../store/useStore';
-import { useTimer } from '../store/useTimer';
+import { useTick, useTimer } from '../store/useTimer';
 import type { ExerciseEntry, ProgramSlot, Session } from '../types';
 import { Icon } from './Icon';
-import { NumField } from './NumField';
-import { Notice } from './Primitives';
-import { SetRow } from './SetRow';
+import { LogZone, type ZoneState } from './LogZone';
+import { Numpad } from './Numpad';
+import { SetChips } from './SetChips';
+import { Sheet } from './Sheet';
 
 export function ExerciseBlock({
   session,
   entry,
   slot,
+  isLastExercise,
+  onNext,
 }: {
   session: Session;
   entry: ExerciseEntry;
   slot: ProgramSlot;
+  isLastExercise: boolean;
+  onNext: () => void;
 }) {
   const store = useStore();
   const { settings, sessions } = store;
   const unit = settings.unit;
-  const startRest = useTimer((s) => s.start);
-  const [rirOpen, setRirOpen] = useState<number | null>(null);
+  const timer = useTimer();
+  const [numpadOpen, setNumpadOpen] = useState(false);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
   const [notesOpen, setNotesOpen] = useState(false);
 
   const exercise = getExercise(entry.exerciseId);
@@ -42,7 +47,6 @@ export function ExerciseBlock({
     () => lastPerformance(sessions, entry.exerciseId, session.id),
     [sessions, entry.exerciseId, session.id],
   );
-
   const lastSets = last ? completedSets(last.entry) : [];
   const readySignal = last ? readyToProgress(last.entry, last.session.date) : null;
 
@@ -54,25 +58,55 @@ export function ExerciseBlock({
       : 'RIR 1–2';
 
   const restSec = restForExercise(settings, entry.exerciseId, slot.restSec);
-  const workingWeight = entry.sets.find((s) => s.reps === 0)?.weight ?? entry.sets[0]?.weight ?? 0;
 
-  const message = allDone
-    ? progressionMessage(entry, last?.entry ?? null, false, unit)
-    : null;
+  // The first unlogged set is what the zone is offering.
+  const activeIndex = entry.sets.findIndex((s) => s.reps === 0);
+  const active = activeIndex >= 0 ? entry.sets[activeIndex] : null;
+  const lastLoggedIndex = entry.sets.reduce((acc, s, i) => (s.reps > 0 ? i : acc), -1);
 
-  const handleLog = (index: number, weight: number, reps: number) => {
+  // Reps default to what was done at this set number last time.
+  const suggestedReps = lastSets[activeIndex]?.reps ?? entry.repMin;
+  const [reps, setReps] = useState(suggestedReps);
+  useEffect(() => {
+    setReps(suggestedReps);
+  }, [suggestedReps, activeIndex]);
+
+  const now = useTick(timer.endsAt !== null);
+  const remaining = timer.endsAt ? (timer.endsAt - now) / 1000 : 0;
+  const restDone = timer.endsAt !== null && remaining <= 0;
+  const state: ZoneState = timer.endsAt !== null ? 'rest' : allDone ? 'done' : 'log';
+
+  const weight = active?.weight ?? entry.sets[entry.sets.length - 1]?.weight ?? 0;
+
+  const setWeight = (w: number) => {
+    const next = Math.max(0, Math.round(w * 100) / 100);
+    if (activeIndex >= 0) store.setEntryWeight(session.id, entry.slotId, next);
+  };
+
+  const handleLog = () => {
+    if (activeIndex < 0 || reps <= 0) return;
     primeAudio();
-    store.logSet(session.id, entry.slotId, index, weight, reps);
-    setRirOpen(index);
-    const remaining = entry.sets.filter((s, i) => i !== index && s.reps === 0).length;
-    if (settings.autoStartRest && remaining > 0) {
-      startRest(restSec, `${exercise.name} · set ${index + 2} next`);
+    store.logSet(session.id, entry.slotId, activeIndex, weight, reps);
+    const remainingSets = entry.sets.filter((s, i) => i !== activeIndex && s.reps === 0).length;
+    if (settings.autoStartRest && remainingSets > 0) {
+      timer.start(restSec, `${exercise.name} · set ${activeIndex + 2} next`);
     }
   };
 
+  const handleUndo = () => {
+    if (lastLoggedIndex < 0) return;
+    store.clearSet(session.id, entry.slotId, lastLoggedIndex);
+    timer.stop();
+  };
+
+  const message = allDone ? progressionMessage(entry, last?.entry ?? null, false, unit) : null;
+
+  // While resting, the zone previews the set that is coming next.
+  const previewIndex = activeIndex >= 0 ? activeIndex : entry.sets.length - 1;
+
   return (
-    <div className="stack" style={{ gap: 18 }}>
-      <div>
+    <div className="exercise">
+      <div className="exercise__head">
         <div className="row-between" style={{ alignItems: 'flex-start' }}>
           <div style={{ minWidth: 0 }}>
             <h2 className="ex__name">{exercise.name}</h2>
@@ -85,168 +119,208 @@ export function ExerciseBlock({
           </span>
         </div>
 
-        <div className="chiprow" style={{ marginTop: 12 }}>
-          <span className="chip chip--tone">{rirTarget}</span>
-          <span className="chip chip--tone">
-            <Icon name="timer" size={13} /> {clock(restSec)} rest
-          </span>
-          {slot.variants.length > 1
-            ? slot.variants.map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  className={`chip ${id === entry.exerciseId ? 'chip--alt' : ''}`}
-                  onClick={() => store.chooseVariant(slot.slotId, id)}
-                  disabled={logged.length > 0 && id !== entry.exerciseId}
-                >
-                  {getExercise(id).name}
-                </button>
-              ))
-            : null}
+        <div className="exercise__meta num">
+          {last ? (
+            <>
+              <strong>Last</strong> {num(Math.max(...lastSets.map((s) => s.weight)))} {unit} ·{' '}
+              {lastSets.map((s) => s.reps).join('/')}
+            </>
+          ) : (
+            <span className="dim">No history — this sets the baseline.</span>
+          )}
+          <span className="dim"> · {rirTarget}</span>
+          <span className="dim"> · {clock(restSec)} rest</span>
         </div>
-      </div>
 
-      <div className="lasttime">
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="lasttime__label">Last session</div>
-          <div className="lasttime__value num">
-            {last ? (
-              <>
-                {num(Math.max(...lastSets.map((s) => s.weight)))} {unit} ·{' '}
-                {lastSets.map((s) => s.reps).join(' / ')}
-              </>
-            ) : (
-              <span className="dim" style={{ fontSize: 14 }}>
-                No history yet — this one sets the baseline.
-              </span>
-            )}
+        {slot.variants.length > 1 ? (
+          <div className="chiprow" style={{ marginTop: 10 }}>
+            {slot.variants.map((id) => (
+              <button
+                key={id}
+                type="button"
+                className={`chip ${id === entry.exerciseId ? 'chip--alt' : ''}`}
+                onClick={() => store.chooseVariant(slot.slotId, id)}
+                disabled={logged.length > 0 && id !== entry.exerciseId}
+              >
+                {getExercise(id).name}
+              </button>
+            ))}
           </div>
-        </div>
-        {last ? <span className="pill">{formatRelativeDay(last.session.date)}</span> : null}
-      </div>
+        ) : null}
 
-      {readySignal && !allDone && workingWeight === readySignal.weight ? (
-        <Notice tone="pr" icon={<Icon name="arrowUp" size={15} />}>
-          You hit the top of the rep range last session ({readySignal.sets} × {readySignal.repMax} @{' '}
-          {num(readySignal.weight)} {unit}). Consider {num(readySignal.suggested)} {unit} today —
-          your call.
-        </Notice>
-      ) : null}
-
-      <div>
-        <div className="label" style={{ marginBottom: 8 }}>
-          Working weight
-        </div>
-        <div className="weightctl">
-          <button
-            type="button"
-            className="weightctl__btn"
-            aria-label={`Decrease weight by ${exercise.step}`}
-            onClick={() =>
-              store.setEntryWeight(
-                session.id,
-                entry.slotId,
-                Math.max(0, Math.round((workingWeight - exercise.step) * 100) / 100),
-              )
-            }
-          >
-            <Icon name="minus" size={18} />
-          </button>
-          <div className="weightctl__field">
-            <NumField
-              className="weightctl__input num"
-              value={workingWeight}
-              ariaLabel="Working weight"
-              onChange={(w) => store.setEntryWeight(session.id, entry.slotId, w)}
-            />
-            <span className="weightctl__unit">
-              {exercise.inverseLoad ? `${unit} assist` : exercise.usesBodyweight ? `${unit} added` : unit}
+        {readySignal && !allDone && weight === readySignal.weight ? (
+          <div className="notice notice--pr" style={{ marginTop: 12 }}>
+            <span className="notice__icon">
+              <Icon name="arrowUp" size={15} />
+            </span>
+            <span>
+              Topped the range last time at {num(readySignal.weight)} {unit}. Try{' '}
+              {num(readySignal.suggested)} — your call.
             </span>
           </div>
+        ) : null}
+
+        <SetChips sets={entry.sets} activeIndex={activeIndex} onSelect={setEditIndex} />
+
+        <div className="exercise__tools">
           <button
             type="button"
-            className="weightctl__btn"
-            aria-label={`Increase weight by ${exercise.step}`}
-            onClick={() =>
-              store.setEntryWeight(
-                session.id,
-                entry.slotId,
-                Math.round((workingWeight + exercise.step) * 100) / 100,
-              )
-            }
-          >
-            <Icon name="plus" size={18} />
-          </button>
-        </div>
-      </div>
-
-      <ul>
-        {entry.sets.map((set, i) => (
-          <SetRow
-            key={set.id}
-            index={i}
-            set={set}
-            ghostReps={lastSets[i]?.reps ?? entry.repMin}
-            rirOpen={rirOpen === i}
-            onToggleRir={() => setRirOpen(rirOpen === i ? null : i)}
-            onLog={(w, r) => handleLog(i, w, r)}
-            onClear={() => {
-              store.clearSet(session.id, entry.slotId, i);
-              setRirOpen(null);
-            }}
-            onWeight={(w) => store.setSetWeight(session.id, entry.slotId, i, w)}
-            onRir={(rir) => {
-              store.setRir(session.id, entry.slotId, i, rir);
-              setRirOpen(null);
-            }}
-          />
-        ))}
-      </ul>
-
-      <div className="row-between">
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            type="button"
-            className="btn btn--ghost btn--sm"
+            className="btn btn--quiet btn--sm"
             onClick={() => store.addSetRow(session.id, entry.slotId)}
           >
             <Icon name="plus" size={15} /> Set
           </button>
-          {entry.sets.length > entry.targetSets &&
-          entry.sets[entry.sets.length - 1].reps === 0 ? (
-            <button
-              type="button"
-              className="btn btn--quiet btn--sm"
-              onClick={() => store.removeSetRow(session.id, entry.slotId)}
-            >
-              Remove
-            </button>
-          ) : null}
+          <button
+            type="button"
+            className="btn btn--quiet btn--sm"
+            onClick={() => setNotesOpen((v) => !v)}
+          >
+            <Icon name="note" size={15} /> {entry.notes ? 'Note ✓' : 'Note'}
+          </button>
         </div>
-        <button
-          type="button"
-          className="btn btn--quiet btn--sm"
-          onClick={() => setNotesOpen((v) => !v)}
-        >
-          <Icon name="note" size={15} /> {entry.notes ? 'Edit note' : 'Note'}
-        </button>
+
+        {notesOpen || entry.notes ? (
+          <textarea
+            className="input"
+            rows={2}
+            placeholder="Setup, pin position, how it felt…"
+            value={entry.notes ?? ''}
+            onChange={(e) => store.setEntryNotes(session.id, entry.slotId, e.target.value)}
+          />
+        ) : null}
       </div>
 
-      {notesOpen || entry.notes ? (
-        <textarea
-          className="input"
-          rows={2}
-          placeholder="Setup, pin position, how it felt…"
-          value={entry.notes ?? ''}
-          onChange={(e) => store.setEntryNotes(session.id, entry.slotId, e.target.value)}
-        />
-      ) : null}
+      <LogZone
+        state={state}
+        setNumber={previewIndex + 1}
+        totalSets={entry.sets.length}
+        weight={weight}
+        reps={reps}
+        unit={unit}
+        unitSuffix={
+          exercise.inverseLoad ? `${unit} assist` : exercise.usesBodyweight ? `${unit} added` : unit
+        }
+        restRemaining={remaining}
+        restDuration={timer.duration}
+        restDone={restDone}
+        lastRir={lastLoggedIndex >= 0 ? entry.sets[lastLoggedIndex].rir : null}
+        progressionText={message?.text ?? null}
+        isLastExercise={isLastExercise}
+        onLog={handleLog}
+        onAdjustReps={(d) => setReps((r) => Math.max(0, r + d))}
+        onAdjustWeight={(steps) => setWeight(weight + steps * exercise.step)}
+        onEditWeight={() => setNumpadOpen(true)}
+        onSkipRest={timer.stop}
+        onExtendRest={timer.extend}
+        onUndo={handleUndo}
+        onRir={(rir) => {
+          if (lastLoggedIndex >= 0) store.setRir(session.id, entry.slotId, lastLoggedIndex, rir);
+        }}
+        onNext={onNext}
+      />
 
-      {message ? (
-        <Notice tone={message.tone === 'up' || message.tone === 'pr' ? 'pr' : 'default'}>
-          {message.text}
-        </Notice>
-      ) : null}
+      <Numpad
+        open={numpadOpen}
+        value={weight}
+        unit={unit}
+        step={exercise.step}
+        onClose={() => setNumpadOpen(false)}
+        onCommit={setWeight}
+      />
+
+      <EditSet
+        index={editIndex}
+        entry={entry}
+        unit={unit}
+        step={exercise.step}
+        onClose={() => setEditIndex(null)}
+        onChange={(i, w, r) => store.logSet(session.id, entry.slotId, i, w, r)}
+        onClear={(i) => {
+          store.clearSet(session.id, entry.slotId, i);
+          setEditIndex(null);
+        }}
+      />
     </div>
+  );
+}
+
+/** Correcting an already-logged set — rare, so it lives behind a tap. */
+function EditSet({
+  index,
+  entry,
+  unit,
+  step,
+  onClose,
+  onChange,
+  onClear,
+}: {
+  index: number | null;
+  entry: ExerciseEntry;
+  unit: string;
+  step: number;
+  onClose: () => void;
+  onChange: (index: number, weight: number, reps: number) => void;
+  onClear: (index: number) => void;
+}) {
+  const set = index !== null ? entry.sets[index] : null;
+  if (index === null || !set || set.reps === 0) return null;
+
+  return (
+    <Sheet open onClose={onClose} title={`Set ${index + 1}`}>
+      <div className="stack" style={{ gap: 14 }}>
+        <div className="dialrow">
+          <button
+            type="button"
+            className="dial__btn"
+            aria-label="Decrease weight"
+            onClick={() => onChange(index, Math.max(0, set.weight - step), set.reps)}
+          >
+            <Icon name="minus" size={20} />
+          </button>
+          <div className="dial__value dial__value--static">
+            <span className="num display">{num(set.weight)}</span>
+            <span className="dial__unit">{unit}</span>
+          </div>
+          <button
+            type="button"
+            className="dial__btn"
+            aria-label="Increase weight"
+            onClick={() => onChange(index, set.weight + step, set.reps)}
+          >
+            <Icon name="plus" size={20} />
+          </button>
+        </div>
+
+        <div className="dialrow">
+          <button
+            type="button"
+            className="dial__btn"
+            aria-label="One rep fewer"
+            onClick={() => onChange(index, set.weight, Math.max(1, set.reps - 1))}
+          >
+            <Icon name="minus" size={20} />
+          </button>
+          <div className="dial__value dial__value--static">
+            <span className="num display">{set.reps}</span>
+            <span className="dial__unit">reps</span>
+          </div>
+          <button
+            type="button"
+            className="dial__btn"
+            aria-label="One rep more"
+            onClick={() => onChange(index, set.weight, set.reps + 1)}
+          >
+            <Icon name="plus" size={20} />
+          </button>
+        </div>
+
+        <button type="button" className="btn btn--danger btn--block" onClick={() => onClear(index)}>
+          Delete this set
+        </button>
+        <button type="button" className="btn btn--primary btn--block" onClick={onClose}>
+          Done
+        </button>
+      </div>
+    </Sheet>
   );
 }

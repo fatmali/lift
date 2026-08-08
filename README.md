@@ -37,9 +37,26 @@ deliberately, arms sit at 5–8 direct weekly sets each — proportional, not ma
 and the exercise is flagged as ready to progress, on the dashboard and in the logger, with a
 suggested next jump. The app never changes a weight on its own — you decide.
 
-**Fast logging.** Weight is pre-filled from your last session; reps default to what you did last
-time at that set number. One tap on the ✓ saves the set, starts the rest timer and moves on. RIR is
-a five-chip row that appears after the set — optional, never blocking.
+**Built for the gym floor, not the sofa.** Your hands have chalk on them, you are breathing hard,
+the phone is on the floor a metre away, and someone is waiting for the rack. So:
+
+- **One target that never moves.** The bottom of the training screen is a single control that only
+  changes state — log the set, wait out the rest, move on. It is 35,000px², roughly fifteen times
+  the old tick box, so committing a set takes no aim at all.
+- **A whole session is one tap per set.** Weight comes from last time, reps from what you did at
+  that set number. The common case — you did what the plan said — costs a single tap. A full
+  22-set workout completes with 22 taps and nothing else.
+- **Swipe instead of aim.** Drag the zone up or down for reps, left or right for load, one
+  equipment increment at a time, with a haptic pulse per step — so the numbers can be changed
+  without reading the screen.
+- **The system keyboard never opens.** Typing a weight uses an in-app keypad with keys about four
+  times the area, and nothing reflows.
+- **The rest clock is the size of the screen.** Readable from the floor, with the next set's target
+  underneath. Nothing lights up until the rest is actually over, so the bright button rewards
+  waiting rather than inviting you to cut it short.
+- **RIR is asked during the rest**, when you have the attention to answer it, rather than while you
+  are still gasping.
+- **The screen stays awake** for the whole session, and undo is always one tap away.
 
 **Last time, always visible.** Every exercise shows `55 kg · 10 / 10 / 9 / 8` from your previous
 session, inline, before you lift anything.

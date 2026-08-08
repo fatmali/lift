@@ -37,6 +37,14 @@ export function chime(): void {
   });
 }
 
+/**
+ * A single short pulse, fired per increment while dragging. Confirms the
+ * change through the hand so the number does not have to be read.
+ */
+export function tick(): void {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(8);
+}
+
 export function buzz(pattern: number | number[] = [30, 60, 30]): void {
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     navigator.vibrate(pattern);
