@@ -1,0 +1,68 @@
+/*
+ * Lift service worker.
+ * Offline-first shell so the app opens in a basement gym with no signal.
+ * There is no backend to sync with — all data lives in IndexedDB.
+ */
+const CACHE = 'lift-v1';
+const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()),
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim()),
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+
+  // Navigations: try the network, fall back to the cached shell.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          void caches.open(CACHE).then((cache) => cache.put('/index.html', copy));
+          return response;
+        })
+        .catch(() => caches.match('/index.html').then((r) => r ?? caches.match('/'))),
+    );
+    return;
+  }
+
+  // Assets: serve from cache, refresh in the background.
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      const network = fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            void caches.open(CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => cached);
+      return cached ?? network;
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((c) => 'focus' in c);
+      if (existing) return existing.focus();
+      return self.clients.openWindow('/');
+    }),
+  );
+});

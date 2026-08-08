@@ -1,0 +1,66 @@
+/*
+ * Lift design tokens.
+ * Dark by default and by intent: this app is used in a gym, at arm's length,
+ * often under bad lighting. Near-black ground, one warm off-white for primary
+ * action, one indigo for data. No neon, no gradients doing decorative work.
+ */
+:root {
+  color-scheme: dark;
+
+  --bg: #08090b;
+  --bg-soft: #0d0f12;
+  --surface: #121418;
+  --surface-2: #171a1f;
+  --surface-3: #1e2228;
+
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.13);
+
+  --text: #f3f4f6;
+  --text-2: #9aa1ad;
+  --text-3: #666d79;
+
+  --accent: #ece7dc;
+  --accent-ink: #0a0b0d;
+
+  --data: #7c8cf8;
+  --data-soft: rgba(124, 140, 248, 0.14);
+  --done: #4fc98d;
+  --done-soft: rgba(79, 201, 141, 0.13);
+  --pr: #e5b962;
+  --pr-soft: rgba(229, 185, 98, 0.13);
+  --warn: #e0855f;
+  --warn-soft: rgba(224, 133, 95, 0.13);
+
+  --lowerA: #e3a05f;
+  --upper: #7c8cf8;
+  --lowerB: #4fbfa8;
+
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 26px;
+  --r-full: 999px;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 44px;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 24px 60px rgba(0, 0, 0, 0.6);
+
+  --ease: cubic-bezier(0.22, 0.9, 0.28, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', Roboto,
+    system-ui, sans-serif;
+
+  --app-w: 540px;
+  --tabbar-h: 58px;
+}
