@@ -110,6 +110,20 @@ npm run preview  # serve the build
 Install it to your home screen for standalone display, offline use and notifications. On iOS,
 notifications require the app to be added to the Home Screen first.
 
+## Deploying
+
+Pushing to the default branch builds and publishes to GitHub Pages via
+`.github/workflows/deploy.yml`.
+
+GitHub Pages serves project sites from `/<repo>/` rather than a domain root, so the workflow passes
+the repository name through as `BASE_PATH` at build time. `vite.config.ts` defaults that to `/`, and
+the manifest, service worker and notification icons all resolve their paths at runtime — so the same
+source deploys unchanged to a domain root, a custom domain, or any static host.
+
+```bash
+BASE_PATH=/lift/ npm run build && BASE_PATH=/lift/ npm run preview   # reproduce the Pages build
+```
+
 ## Design
 
 **Direction: meet card.** The app is modelled on the artifact it replaces — a training ledger. The

@@ -62,8 +62,8 @@ export async function notify(title: string, body: string, tag: string): Promise<
   const options: NotificationOptions = {
     body,
     tag,
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: `${import.meta.env.BASE_URL}icon-192.png`,
+    badge: `${import.meta.env.BASE_URL}icon-192.png`,
     silent: false,
   };
   try {

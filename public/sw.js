@@ -4,13 +4,17 @@
  * There is no backend to sync with — all data lives in IndexedDB.
  */
 const CACHE = 'lift-v1';
+
+// Derived from where the worker itself was served, so the same file works at
+// a domain root and under a GitHub Pages project path.
+const BASE = new URL('./', self.location).pathname;
 const SHELL = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/fonts/archivo-latin.woff2',
+  BASE,
+  `${BASE}index.html`,
+  `${BASE}manifest.webmanifest`,
+  `${BASE}icon-192.png`,
+  `${BASE}icon-512.png`,
+  `${BASE}fonts/archivo-latin.woff2`,
 ];
 
 self.addEventListener('install', (event) => {
@@ -38,10 +42,10 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((response) => {
           const copy = response.clone();
-          void caches.open(CACHE).then((cache) => cache.put('/index.html', copy));
+          void caches.open(CACHE).then((cache) => cache.put(`${BASE}index.html`, copy));
           return response;
         })
-        .catch(() => caches.match('/index.html').then((r) => r ?? caches.match('/'))),
+        .catch(() => caches.match(`${BASE}index.html`).then((r) => r ?? caches.match(BASE))),
     );
     return;
   }
@@ -69,7 +73,7 @@ self.addEventListener('notificationclick', (event) => {
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       const existing = clients.find((c) => 'focus' in c);
       if (existing) return existing.focus();
-      return self.clients.openWindow('/');
+      return self.clients.openWindow(BASE);
     }),
   );
 });
