@@ -33,9 +33,26 @@ deliberately, arms sit at 5–8 direct weekly sets each — proportional, not ma
 
 ## How it works
 
-**Double progression.** Hit the top of the prescribed rep range on *every* set at the *same* load,
-and the exercise is flagged as ready to progress, on the dashboard and in the logger, with a
-suggested next jump. The app never changes a weight on its own — you decide.
+**Double progression, asked as a choice rather than as arithmetic.** Hit the top of the prescribed
+rep range on every set at the same load and you are ready to progress. Rather than handing over an
+open-ended weight dial and a line of advice — which leaves the programming maths, and the
+confidence to do it, with the person least equipped to want it mid-session — the app offers two
+concrete options before the exercise starts, each with its load, its rep target and the reason it
+exists:
+
+> **Ready to progress** — 4 × 8 at 60 kg last time. Every set at the top of the range.
+> **↑ 62.5 kg** · aim 6–8 · *Add load* — reps will drop at first; that is the point, they climb back.
+> **60 kg** · aim 8+ · *Stay here* — repeat the weight and add reps instead.
+
+Nothing is applied until you pick, so the app never quietly adds load on your behalf. The same
+mechanism handles falling short of the range (offering a back-off), and a first-ever session
+(asking for a starting weight). If you report low energy in the readiness check, the suggested
+option changes from the jump to holding, and says why.
+
+Most of the time it asks nothing at all. If you did not top the range and you feel fine, there is
+only one sensible move — repeat the load and chase reps — and a question with one answer is noise.
+Because the load is settled once per exercise, the logger only asks about reps, which is the thing
+that actually varies set to set.
 
 **Built for the gym floor, not the sofa.** Your hands have chalk on them, you are breathing hard,
 the phone is on the floor a metre away, and someone is waiting for the rack. So:

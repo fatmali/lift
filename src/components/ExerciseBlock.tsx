@@ -6,13 +6,15 @@ import { primeAudio } from '../lib/notify';
 import {
   completedSets,
   lastPerformance,
+  loadDecision,
   progressionMessage,
-  readyToProgress,
+  type LoadOption,
 } from '../domain/progression';
 import { restForExercise, useStore } from '../store/useStore';
 import { useTick, useTimer } from '../store/useTimer';
 import type { ExerciseEntry, ProgramSlot, Session } from '../types';
 import { Icon } from './Icon';
+import { LoadChoice } from './LoadChoice';
 import { LogZone, type ZoneState } from './LogZone';
 import { Numpad } from './Numpad';
 import { SetChips } from './SetChips';
@@ -48,7 +50,12 @@ export function ExerciseBlock({
     [sessions, entry.exerciseId, session.id],
   );
   const lastSets = last ? completedSets(last.entry) : [];
-  const readySignal = last ? readyToProgress(last.entry, last.session.date) : null;
+
+  const [chosen, setChosen] = useState<LoadOption['id'] | null>(null);
+  const decision = useMemo(
+    () => loadDecision(entry, last, session.readiness, unit),
+    [entry, last, session.readiness, unit],
+  );
 
   const phase = phaseForWeek(session.week);
   const rirTarget = phase.deload
@@ -148,28 +155,33 @@ export function ExerciseBlock({
           </div>
         ) : null}
 
-        {readySignal && !allDone && weight === readySignal.weight ? (
-          <div className="notice notice--pr" style={{ marginTop: 12 }}>
-            <span className="notice__icon">
-              <Icon name="arrowUp" size={15} />
-            </span>
-            <span>
-              Topped the range last time at {num(readySignal.weight)} {unit}. Try{' '}
-              {num(readySignal.suggested)} — your call.
-            </span>
-          </div>
+        {/* Only before the first set — once you have lifted, it is decided. */}
+        {decision && logged.length === 0 ? (
+          <LoadChoice
+            decision={decision}
+            unit={unit}
+            selected={chosen}
+            onChoose={(o) => {
+              setChosen(o.id);
+              setWeight(o.weight);
+            }}
+            onSetStart={() => setNumpadOpen(true)}
+          />
         ) : null}
 
         <SetChips sets={entry.sets} activeIndex={activeIndex} onSelect={setEditIndex} />
 
         <div className="exercise__tools">
-          <button
-            type="button"
-            className="btn btn--quiet btn--sm"
-            onClick={() => store.addSetRow(session.id, entry.slotId)}
-          >
-            <Icon name="plus" size={15} /> Set
-          </button>
+          {/* An extra set only makes sense once the prescribed ones are done. */}
+          {allDone ? (
+            <button
+              type="button"
+              className="btn btn--quiet btn--sm"
+              onClick={() => store.addSetRow(session.id, entry.slotId)}
+            >
+              <Icon name="plus" size={15} /> I did another
+            </button>
+          ) : null}
           <button
             type="button"
             className="btn btn--quiet btn--sm"

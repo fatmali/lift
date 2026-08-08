@@ -1,7 +1,13 @@
 // Quick domain checks (node --experimental-strip-types check.ts)
 import { setsForWeek, phaseForWeek } from './data/program.ts';
 import { weekSchedule, weekStreak, weekCompletion } from './domain/schedule.ts';
-import { readyToProgress, prsForSession, e1rm, setVolume } from './domain/progression.ts';
+import {
+  readyToProgress,
+  prsForSession,
+  e1rm,
+  setVolume,
+  loadDecision,
+} from './domain/progression.ts';
 import { getExercise } from './data/exercises.ts';
 import type { ExerciseEntry, Session } from './types.ts';
 
@@ -109,6 +115,45 @@ check('first session sets no PRs', prsForSession(w1, [w1], 'kg').length, 0);
 const kinds = prsForSession(w2, [w1, w2], 'kg').map((p) => p.kind);
 check('second session records weight PR', kinds.includes('weight'), true);
 check('second session records volume PR', kinds.includes('volume'), true);
+
+// ── The load decision ──────────────────────────────────────────────────────
+const hist = (sets: [number, number][], targetSets = 4) => ({
+  session: session('h', '2026-08-11', 1, []),
+  entry: entry('hip-thrust', targetSets, 8, 10, sets),
+});
+const today = entry('hip-thrust', 4, 8, 10, []);
+
+const flat = loadDecision(today, hist([[50, 10], [50, 10], [50, 10], [50, 10]]), undefined, 'kg');
+check('topping the range offers a jump and a hold', flat?.options.map((o) => o.id), ['jump', 'hold']);
+check('the jump is one equipment increment', flat?.options[0].weight, 52.5);
+check('the jump is what is suggested', flat?.options[0].recommended, true);
+check('nothing is applied until chosen', flat?.options[1].weight, 50);
+
+const tired = loadDecision(
+  today,
+  hist([[50, 10], [50, 10], [50, 10], [50, 10]]),
+  { energy: 'low', soreness: 'medium' },
+  'kg',
+);
+check('turning up flat suggests holding instead', tired?.options.find((o) => o.recommended)?.id, 'hold');
+
+const mid = loadDecision(today, hist([[50, 10], [50, 9], [50, 8], [50, 8]]), undefined, 'kg');
+check('a normal session asks nothing at all', mid, null);
+
+const heavy = loadDecision(today, hist([[60, 7], [60, 6], [60, 5], [60, 5]]), undefined, 'kg');
+check('falling short suggests backing off', heavy?.options[0].id, 'backoff');
+check('the back-off is one increment down', heavy?.options[0].weight, 57.5);
+
+check('a first session asks for a starting weight',
+  loadDecision(entry('back-squat', 4, 6, 8, []), null, undefined, 'kg')?.options[0].id, 'start');
+
+const assistedChoice = loadDecision(
+  entry('assisted-pull-up', 3, 8, 10, []),
+  { session: session('h2', '2026-08-11', 1, []), entry: entry('assisted-pull-up', 3, 8, 10, [[20, 10], [20, 10], [20, 10]]) },
+  undefined,
+  'kg',
+);
+check('progress on an assisted lift removes assistance', assistedChoice?.options[0].weight, 17.5);
 
 // ── Volume / e1RM ──────────────────────────────────────────────────────────
 check('epley estimate', e1rm(100, 5), 116.7);

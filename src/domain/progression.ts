@@ -1,6 +1,14 @@
 import { getExercise } from '../data/exercises';
-import { uid } from '../lib/format';
-import type { Exercise, ExerciseEntry, PR, PRKind, Session, SetLog } from '../types';
+import { plural, uid } from '../lib/format';
+import type {
+  Exercise,
+  ExerciseEntry,
+  PR,
+  PRKind,
+  Readiness,
+  Session,
+  SetLog,
+} from '../types';
 
 /** Sets with zero reps are placeholders, not work. */
 export const isWorkingSet = (s: SetLog) => s.reps > 0;
@@ -300,6 +308,153 @@ export function progressionQueue(sessions: Session[]): ProgressionSignal[] {
     }
   }
   return out;
+}
+
+// ── The load decision ───────────────────────────────────────────────────────
+
+export interface LoadOption {
+  id: 'jump' | 'hold' | 'backoff' | 'start';
+  weight: number;
+  repTarget: string;
+  title: string;
+  reason: string;
+  recommended: boolean;
+}
+
+export interface LoadDecision {
+  headline: string;
+  detail: string;
+  options: LoadOption[];
+}
+
+const roundLoad = (n: number) => Math.max(0, Math.round(n * 100) / 100);
+
+/**
+ * What the athlete should actually be asked before starting an exercise.
+ *
+ * The old interface handed over an open-ended weight dial and a line of advice,
+ * which leaves the programming arithmetic — and the confidence to do it — with
+ * the person least equipped to want it mid-session. This returns concrete
+ * options instead: each one a load, a rep target, and the reason it exists.
+ *
+ * It returns null most of the time. If you did not top the range and are not
+ * beaten up, there is nothing to decide: repeat the weight and chase reps.
+ * Asking a question with only one sensible answer is just noise.
+ */
+export function loadDecision(
+  entry: ExerciseEntry,
+  previous: HistoryPoint | null,
+  readiness: Readiness | undefined,
+  unit: string,
+): LoadDecision | null {
+  const ex = getExercise(entry.exerciseId);
+  const range = `${entry.repMin}–${entry.repMax}`;
+  // Heavier means less assistance on an assisted lift.
+  const heavier = (w: number) => roundLoad(ex.inverseLoad ? w - ex.step : w + ex.step);
+  const lighter = (w: number) => roundLoad(ex.inverseLoad ? w + ex.step : w - ex.step);
+
+  if (!previous) {
+    return {
+      headline: 'First time on this lift',
+      detail: `Pick a load you could manage about ${entry.repMax + 2} reps with, then stop at ${entry.repMax}. That is your starting point — it does not need to be right.`,
+      options: [
+        {
+          id: 'start',
+          weight: 0,
+          repTarget: range,
+          title: 'Set a starting weight',
+          reason: 'You can change it after the first set.',
+          recommended: true,
+        },
+      ],
+    };
+  }
+
+  const prevSets = completedSets(previous.entry);
+  const prevWeight = topWeight(previous.entry);
+  const topped = readyToProgress(previous.entry, previous.session.date) !== null;
+  const short = prevSets.filter((s) => s.reps < entry.repMin).length;
+  const drained = readiness?.energy === 'low' || readiness?.soreness === 'high';
+
+  if (topped) {
+    return {
+      headline: drained ? 'Ready to progress — but you turned up flat' : 'Ready to progress',
+      detail: `${prevSets.length} × ${entry.repMax} at ${prevWeight} ${unit} last time. Every set at the top of the range.`,
+      options: [
+        {
+          id: 'jump',
+          weight: heavier(prevWeight),
+          repTarget: range,
+          title: 'Add load',
+          reason: 'Reps will drop at first. That is the point — they climb back.',
+          recommended: !drained,
+        },
+        {
+          id: 'hold',
+          weight: prevWeight,
+          repTarget: `${entry.repMax}+`,
+          title: 'Stay here',
+          reason: drained
+            ? 'Low on energy — repeat it and bank the practice.'
+            : 'Repeat the weight and add reps instead.',
+          recommended: drained,
+        },
+      ],
+    };
+  }
+
+  if (short >= 2) {
+    return {
+      headline: 'That one was heavy',
+      detail: `You came in under ${entry.repMin} reps on ${plural(short, 'set')} last time.`,
+      options: [
+        {
+          id: 'backoff',
+          weight: lighter(prevWeight),
+          repTarget: range,
+          title: 'Take some off',
+          reason: 'Reps in the prescribed range build more than grinding singles.',
+          recommended: true,
+        },
+        {
+          id: 'hold',
+          weight: prevWeight,
+          repTarget: range,
+          title: 'Try it again',
+          reason: 'Same weight, another crack at the range.',
+          recommended: false,
+        },
+      ],
+    };
+  }
+
+  if (drained) {
+    return {
+      headline: 'You turned up flat',
+      detail: 'Energy or soreness is high. Neither of these is a wasted session.',
+      options: [
+        {
+          id: 'hold',
+          weight: prevWeight,
+          repTarget: range,
+          title: 'Same as last time',
+          reason: 'Hold the load and see what the first set gives you.',
+          recommended: true,
+        },
+        {
+          id: 'backoff',
+          weight: lighter(prevWeight),
+          repTarget: range,
+          title: 'Take some off',
+          reason: 'Lighter, full range, leave more in reserve.',
+          recommended: false,
+        },
+      ],
+    };
+  }
+
+  // Same weight, chase reps. Nothing worth interrupting for.
+  return null;
 }
 
 // ── Feedback copy ───────────────────────────────────────────────────────────

@@ -209,35 +209,21 @@ export function LogZone({
   return (
     <div className="zone">
       <div className="zone__body">
-        <div className="zone__label caps">
-          Set {setNumber} of {totalSets}
-        </div>
-
-        <div className="dialrow">
+        {/* The load was settled before the exercise began, so it is stated
+            rather than asked again — only the reps change set to set. */}
+        <div className="zone__setline">
+          <span className="caps">
+            Set {setNumber} of {totalSets}
+          </span>
           <button
             type="button"
-            className="dial__btn"
-            aria-label="Decrease weight"
-            onClick={() => onAdjustWeight(-1)}
-          >
-            <Icon name="minus" size={20} />
-          </button>
-          <button
-            type="button"
-            className="dial__value"
+            className="zone__load"
             onClick={onEditWeight}
-            aria-label={`Weight ${weight} ${unit}. Tap to type a different one.`}
+            aria-label={`Load ${weight} ${unit}. Tap to change.`}
           >
             <span className="num display">{num(weight)}</span>
             <span className="dial__unit">{unitSuffix}</span>
-          </button>
-          <button
-            type="button"
-            className="dial__btn"
-            aria-label="Increase weight"
-            onClick={() => onAdjustWeight(1)}
-          >
-            <Icon name="plus" size={20} />
+            <Icon name="chevronDown" size={13} className="zone__loadedit" />
           </button>
         </div>
 
@@ -279,7 +265,7 @@ export function LogZone({
           Log set
         </button>
 
-        <div className="zone__hint caps">Tap to log · drag up/down for reps · left/right for load</div>
+        <div className="zone__hint caps">Tap to log · drag up/down reps · left/right load</div>
       </div>
     </div>
   );
