@@ -58,6 +58,7 @@ const PATHS = {
   ),
   moon: <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />,
   arrowUp: <path d="M12 19V5m0 0-6 6m6-6 6 6" />,
+  arrowDown: <path d="M12 5v14m0 0 6-6m-6 6-6-6" />,
   scale: <path d="M12 4v16M6 8h12M4 20h16" />,
   note: (
     <>

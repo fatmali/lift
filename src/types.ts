@@ -226,3 +226,136 @@ export interface AppState {
   /** Dismissed coaching hints, so nothing nags twice. */
   dismissed: string[];
 }
+
+/**
+ * Circuit (functional) training — the redesigned default experience.
+ *
+ * "Open the app. See what you're doing today. Start. Move through the
+ * workout. Check things off. Done." A circuit day is a fixed list of
+ * exercises repeated for a number of rounds; the athlete checks each one
+ * off rather than logging discrete sets. Weight or band level is a
+ * secondary control that remembers the last value used, and timed
+ * exercises carry their own countdown so nobody has to watch a clock.
+ *
+ * This is deliberately a separate model from the strength `Session` above
+ * rather than a variant of it — the interaction (checkbox, not reps typed
+ * in) and the unit of progress (a round, not a set) are different enough
+ * that forcing one schema to cover both would bend the strength side out
+ * of shape for no benefit.
+ */
+export type CircuitLoadKind = 'load' | 'band' | 'time';
+
+export interface CircuitExercise {
+  id: string;
+  name: string;
+  /** One short line, shown under the name — no lectures. */
+  cue: string;
+  kind: CircuitLoadKind;
+  /** Drives the muscle-focus balance shown in Progress. */
+  muscles: MuscleGroup[];
+  /** Long form, shown on the exercise's own screen, e.g. "20 total · 10 a side". */
+  prescription: string;
+  /** Short form, shown in list rows, e.g. "20 total". */
+  line: string;
+  /** 'load' only. */
+  unit?: 'kg' | 'lb';
+  step?: number;
+  defaultWeight?: number;
+  /** 'time' only, seconds per round. */
+  seconds?: number;
+  /** Static coaching nudge shown under the weight stepper, if any. */
+  suggestion?: string;
+}
+
+/**
+ * Functional days run as rounds; strength days hand off to the set-by-set
+ * logger. The mode is a property of the day, so one week can hold both.
+ */
+export type WorkoutMode = 'functional' | 'strength';
+
+export interface CircuitWorkoutDay {
+  id: string;
+  /** 0 = Sunday … 6 = Saturday */
+  weekday: number;
+  /** The muscle-group headline — this is what Today shows, not a slot name. */
+  focus: string;
+  mode: WorkoutMode;
+  rounds: number;
+  minutes: number;
+  exerciseIds: string[];
+}
+
+/** The athlete's last-used weight or band for an exercise, remembered globally. */
+export type CircuitLoad = { kind: 'load'; weight: number } | { kind: 'band'; bandIndex: number };
+
+export interface CircuitSession {
+  id: string;
+  workoutId: string;
+  /** Copied at start, so history survives the plan being edited later. */
+  focus: string;
+  date: string;
+  startedAt: number;
+  finishedAt?: number;
+  rounds: number;
+  /** The round currently being worked, 1-indexed. */
+  currentRound: number;
+  /** `${round}-${exerciseId}` keys that have been checked off. */
+  completed: Record<string, true>;
+  /** The loads actually used, snapshotted when the session is filed. */
+  loadsUsed?: Record<string, CircuitLoad>;
+}
+
+/** A meal in the weekly plan. */
+export interface Meal {
+  id: string;
+  time: string;
+  name: string;
+  kcal: number;
+  protein: number;
+  recipeId?: string;
+}
+
+export interface Recipe {
+  id: string;
+  name: string;
+  kcal: number;
+  protein: number;
+  prepMin: number;
+  cookMin: number;
+  ingredients: string[];
+  method: string[];
+  /** "Chicken" -> ["Tilapia", "Lean beef", …] — swaps that keep the numbers. */
+  swaps: { component: string; options: string[] }[];
+}
+
+export interface ShoppingItem {
+  name: string;
+  qty: string;
+}
+
+export interface ShoppingGroup {
+  title: string;
+  items: ShoppingItem[];
+}
+
+export interface FastingWindow {
+  /** "HH:MM" the eating window opens. */
+  eatFrom: string;
+  /** "HH:MM" the eating window closes and the fast begins. */
+  eatUntil: string;
+}
+
+export interface CircuitAppState {
+  /** The athlete's own plan — seeded from the default, then editable. */
+  plan: CircuitWorkoutDay[];
+  sessions: CircuitSession[];
+  activeSessionId: string | null;
+  loads: Record<string, CircuitLoad>;
+  /** `${date}-${mealId}` for meals ticked off. */
+  loggedMeals: Record<string, true>;
+  /** `${group}/${name}` for shopping items in the basket. */
+  bought: Record<string, true>;
+  fasting: FastingWindow;
+  /** date -> epoch ms the fast was actually broken, when ended by hand. */
+  fastBrokenAt: Record<string, number>;
+}
