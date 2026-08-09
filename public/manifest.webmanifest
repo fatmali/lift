@@ -1,13 +1,13 @@
 {
-  "name": "Lift — Strength Training",
+  "name": "Lift — Training & Fuel",
   "short_name": "Lift",
-  "description": "A personal 12-week hypertrophy and strength system. Progressive overload, consistency, recovery.",
+  "description": "A personal training companion. Today's workout, checked off round by round, with the food that goes around it.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0b0b0c",
-  "theme_color": "#0b0b0c",
+  "background_color": "#161826",
+  "theme_color": "#161826",
   "categories": ["fitness", "health", "lifestyle"],
   "icons": [
     { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

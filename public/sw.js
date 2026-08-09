@@ -3,7 +3,9 @@
  * Offline-first shell so the app opens in a basement gym with no signal.
  * There is no backend to sync with — all data lives in IndexedDB.
  */
-const CACHE = 'lift-v1';
+// Bumped when the cached shell changes — activate() drops every other cache,
+// so existing installs pick up the new shell instead of serving the old one.
+const CACHE = 'lift-v2';
 
 // Derived from where the worker itself was served, so the same file works at
 // a domain root and under a GitHub Pages project path.
@@ -14,7 +16,7 @@ const SHELL = [
   `${BASE}manifest.webmanifest`,
   `${BASE}icon-192.png`,
   `${BASE}icon-512.png`,
-  `${BASE}fonts/archivo-latin.woff2`,
+  `${BASE}fonts/inter-latin.woff2`,
 ];
 
 self.addEventListener('install', (event) => {
