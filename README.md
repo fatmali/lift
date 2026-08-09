@@ -1,147 +1,178 @@
 # Lift
 
-A personal strength training system built as an offline-first, mobile-first PWA.
+A personal training companion built as an offline-first, mobile-first PWA.
 
-Not a generic fitness tracker: it runs one specific 12-week hypertrophy block, three days a week,
-and measures success by **consistency, progressive overload and recovery** — never by calories
-burned or scale weight.
+Not a workout database. The whole app is one loop:
+
+> Open it. See what you're doing today. Start. Move through it. Check things off. Done.
+
+It answers two questions — **what am I training today?** and **what am I eating today?** — and
+tries very hard not to ask anything else. Success is **consistency, getting stronger, and eating
+enough protein**, never calories burned or scale weight.
 
 ---
 
-## The block
+## The week
 
-| Day | Session | Focus |
-| --- | --- | --- |
-| Tuesday | **Lower A** | Glute + Quad |
-| Thursday | **Upper** | Back + Shoulders + Arms |
-| Saturday | **Lower B** | Glute + Hamstring |
+| Day | Focus |
+| --- | --- |
+| Tuesday | **Glutes + Quads** |
+| Thursday | **Shoulders + Back + Arms** |
+| Saturday | **Glutes + Hamstrings** |
 
-The exercise selection is **fixed for all twelve weeks**. Stable movements are the only way to know
-whether you actually got stronger. What moves is load and reps.
+The muscle focus *is* the name — there is no "Lower A" to decode. That string is what Today shows
+as its headline, and you can rename it.
 
-Periodisation is built in:
+**The plan is yours, not a constant.** In Plan, tap any workout to rename its focus, move it to
+another day, switch it between functional and strength, change rounds and length, remove exercises
+or add from the library. Add a workout and it takes the first free weekday; remove one and the day
+becomes a rest day. Today follows whatever is scheduled for the day you are actually on — move
+Tuesday's session to Friday and Tuesday becomes a genuine rest day, showing what's next and a way
+into it.
 
-| Weeks | Phase | Effort |
-| --- | --- | --- |
-| 1–4 | Accumulation | RIR 2–3 |
-| 5–8 | Intensification | RIR 1–2 |
-| 9–11 | Peak | RIR 0–2 |
-| 12 | Deload | RIR 3–4, sets cut ~40% |
+## Functional is the default
 
-Priorities are reflected in the set allocation: glutes lead, hamstrings and back are built
-deliberately, arms sit at 5–8 direct weekly sets each — proportional, not maximal.
+A workout is a **circuit of rounds**, not a set-by-set logger:
 
-## How it works
+```
+ROUND 1 / 3
+☐ Goblet Squat        12 reps · 12 kg
+☐ Romanian Deadlift   12 reps · 20 kg
+☐ Reverse Lunge       20 total · 10 kg
+☐ Hip Thrust          12 reps · 40 kg
+☐ Lateral Band Walk   20 total · Medium band
+☐ Dead Bug            40 sec
+```
+
+Do the movement, tap the box. No entering reps the plan already specifies, no manually advancing
+through sets. Tick the last one and the rest screen appears on its own with the clock already
+running; skip it whenever you like. Three rounds and you're done.
+
+Rep prescriptions follow the way the training actually goes: bilateral movements at ~12 reps,
+unilateral at ~20 total (10 a side).
+
+**Weight is secondary, and it remembers itself.** Tap an exercise name to open it full screen: a
+big −/+ stepper at the equipment's own increment, the load carried over from last time, and one
+short form cue. Band work steps through Light/Medium/Heavy instead of kilograms, because not
+everything progresses in weight. Where there's a reason to nudge, it says so once and leaves the
+choice alone.
+
+**Timed work times itself.** Anything prescribed in seconds gets a built-in countdown — one Start
+button, and it checks itself off when it hits zero. Nobody watches a clock.
+
+Built for the gym floor: 52px checkboxes, 68px steppers, a 60px primary action, and the screen
+stays awake for the whole session. You can use it holding a dumbbell, out of breath, looking at it
+for two seconds.
+
+## Strength mode, for the days that want it
+
+Set a day to **strength** and it runs the app's full set-by-set logger instead — weight and reps
+per set, RIR asked during the rest, records computed from the log. It is the same detailed system
+described below, unchanged; functional days simply never see it.
 
 **Double progression, asked as a choice rather than as arithmetic.** Hit the top of the prescribed
 rep range on every set at the same load and you are ready to progress. Rather than handing over an
-open-ended weight dial and a line of advice — which leaves the programming maths, and the
-confidence to do it, with the person least equipped to want it mid-session — the app offers two
-concrete options before the exercise starts, each with its load, its rep target and the reason it
-exists:
+open-ended weight dial and a line of advice, the app offers two concrete options before the
+exercise starts, each with its load, its rep target and the reason it exists:
 
 > **Ready to progress** — 4 × 8 at 60 kg last time. Every set at the top of the range.
 > **↑ 62.5 kg** · aim 6–8 · *Add load* — reps will drop at first; that is the point, they climb back.
 > **60 kg** · aim 8+ · *Stay here* — repeat the weight and add reps instead.
 
 Nothing is applied until you pick, so the app never quietly adds load on your behalf. The same
-mechanism handles falling short of the range (offering a back-off), and a first-ever session
-(asking for a starting weight). If you report low energy in the readiness check, the suggested
-option changes from the jump to holding, and says why.
+mechanism handles falling short of the range, and a first-ever session. If you report low energy in
+the readiness check, the suggested option changes from the jump to holding, and says why.
 
-Most of the time it asks nothing at all. If you did not top the range and you feel fine, there is
-only one sensible move — repeat the load and chase reps — and a question with one answer is noise.
-Because the load is settled once per exercise, the logger only asks about reps, which is the thing
-that actually varies set to set.
+Because the load is settled once per exercise, the logger only asks about reps — the thing that
+actually varies set to set. Swipe the log zone for reps and load without reading the screen, the
+system keyboard never opens, the rest clock is the size of the screen, and undo is always one tap
+away.
 
-**Built for the gym floor, not the sofa.** Your hands have chalk on them, you are breathing hard,
-the phone is on the floor a metre away, and someone is waiting for the rack. So:
+## Fuel
 
-- **One target that never moves.** The bottom of the training screen is a single control that only
-  changes state — log the set, wait out the rest, move on. It is 35,000px², roughly fifteen times
-  the old tick box, so committing a set takes no aim at all.
-- **A whole session is one tap per set.** Weight comes from last time, reps from what you did at
-  that set number. The common case — you did what the plan said — costs a single tap. A full
-  22-set workout completes with 22 taps and nothing else.
-- **Swipe instead of aim.** Drag the zone up or down for reps, left or right for load, one
-  equipment increment at a time, with a haptic pulse per step — so the numbers can be changed
-  without reading the screen.
-- **The system keyboard never opens.** Typing a weight uses an in-app keypad with keys about four
-  times the area, and nothing reflows.
-- **The rest clock is the size of the screen.** Readable from the floor, with the next set's target
-  underneath. Nothing lights up until the rest is actually over, so the bright button rewards
-  waiting rather than inviting you to cut it short.
-- **RIR is asked during the rest**, when you have the attention to answer it, rather than while you
-  are still gasping.
-- **The screen stays awake** for the whole session, and undo is always one tap away.
+Nutrition is part of the same system rather than a second app.
 
-**Last time, always visible.** Every exercise shows `55 kg · 10 / 10 / 9 / 8` from your previous
-session, inline, before you lift anything.
+- **Fasting** — a 14:10 window by default, shown as a live clock on Today. It is *derived from the
+  two times you set*, not tracked as a stopwatch, so it keeps running whether or not the app is
+  open. End it by hand whenever you actually eat. The app makes no claims about what fasting does;
+  it is a schedule, not a cure.
+- **Protein** — a meter that fills from meals you tick off, against a daily target.
+- **The week's meals** — three a day, marked training or rest depending on what your plan says for
+  that weekday. Training days carry more carbohydrate; rest days somewhat less. Nothing is
+  eliminated.
+- **Recipes** — macros, prep and cook time, ingredients, method, and swaps that keep the numbers
+  (chicken → tilapia / lean beef / tuna / eggs; rice → potatoes / sweet potato / ugali / wrap).
+- **Shopping list** — grouped the way a shop is walked, with quantities, checkable as you go.
 
-**Records, computed not stored.** Heaviest load, rep PR at a given weight, session volume and
-estimated 1RM are all derived from the raw set log, so history stays the single source of truth.
-Multiple records on one lift in one session are grouped into one achievement.
+The meals are high protein, high fibre, practical and Kenyan-friendly.
 
-**Recovery is part of the program.** A two-tap energy/soreness check before a session suggests a
-load adjustment when you are beaten up — a suggestion, never a diagnosis. Repeatedly taking
-compound work to RIR 0 gets a gentle note, not a gold star.
+## Progress tells a story
 
-**Missed sessions are handled, not punished.** A missed day offers "train it today" or "move on",
-and a session shifted to another day of the same week still counts toward that week.
+Not fourteen charts. One page that says what actually happened:
 
-The block begins on the next occurrence of its first training day rather than backdating to the
-Monday just gone — opening a fresh app to sessions already marked missed is a poor way to start.
-The first session date is editable in Plan; picking any date moves week 1 to that week.
+- **Strength** — the loads that moved, first logged weight → most recent. Only appears once an
+  exercise has been trained twice; one session is a data point, not a trend.
+- **Consistency** — sessions kept over the trailing four weeks.
+- **Muscle focus** — completed exercise-rounds per muscle group, so you can see what's carrying the
+  block and what's thin.
+- **Body** — weight, waist and hips as trends across your readings rather than daily numbers, plus
+  private progress photos.
+
+Until there is enough history to say something true, it says so plainly instead of inventing a
+number.
+
+Load history is **snapshotted onto each session when you finish it**, so editing your plan or your
+working weights later cannot retroactively rewrite what a past workout was.
+
+## Navigation
+
+Three destinations, not four.
+
+- **Today** — the training card, the fasting clock, the day's fuel, one progress insight.
+- **Progress** — the story above, with Body inside it.
+- **Plan** — your week and its editor, the exercise library, strength sessions, meal plan, shopping
+  list, fasting window.
+
+Body has no tab of its own and nutrition has no tab of its own; both live where you already are.
 
 ## Layout
 
 One codebase, two shapes. Below 760px it is a phone app: bottom tab bar, single column, bottom
-sheets. Above that the tab bar becomes a persistent side rail carrying the block position, sheets
-become centred dialogs, and at 1080px the content splits into two columns — what you act on today
-in the left, the log and reference in the right. Training mode swaps its numbered exercise strip
-for a named rail, while the logging controls keep their thumb-sized proportions rather than
-stretching across the column.
+sheets. Above that the tab bar becomes a persistent side rail and sheets become centred dialogs.
+Body additionally splits into two columns at 1080px.
 
 Verified with no horizontal overflow from 320px to 1600px.
-
-## Screens
-
-- **Today** — today's session, next session, week 2/3, week streak, ready-to-progress queue,
-  recent PRs, 12-week block indicator, conditioning.
-- **Session** — full-screen training mode: readiness check, one exercise at a time, set rows,
-  rest timer, completion summary.
-- **Progress** — per-lift charts (top weight / est. 1RM / volume / reps), weekly summaries,
-  weekly sets by muscle group, 12-week consistency grid, PR log.
-- **Body** — measurements, private progress photos (front/side/back with comparison), recovery
-  check-ins, conditioning log.
-- **Plan** — the full program, rest defaults, reminders, unit, export/import/reset.
 
 ## Data
 
 Everything is local. There is no backend and no network request.
 
-- App state (sessions, sets, reps, weights, RIR, measurements, recovery, preferences) →
-  **IndexedDB** via `zustand/persist`.
-- Progress photos → a **separate IndexedDB store** as blobs. They are never uploaded and never
-  analysed.
+- Circuit plan, sessions, working loads, logged meals, shopping basket and fasting window →
+  **IndexedDB** (`lift-circuit-v1`) via `zustand/persist`.
+- Strength sessions, sets, reps, RIR, measurements, recovery and preferences → **IndexedDB**
+  (`lift-state-v1`), same mechanism.
+- Progress photos → a **separate IndexedDB store** as blobs. Never uploaded, never analysed.
 - Rest timer → `localStorage`, stored as an end timestamp so it survives a locked screen or reload.
 
-Export produces a JSON backup of everything except photos.
+The two stores are kept separate on purpose: a round you tick off and a set you log are different
+shapes, and forcing one schema to carry both would bend the strength side out of shape for no
+benefit.
 
 Set logs carry a `source` field (`manual` | `import`) so a future Apple Watch / HealthKit import can
-write sets without a schema migration. V1 is manual logging only, by design.
+write sets without a schema migration. Manual logging only, by design.
 
 ## Architecture
 
 ```
 src/
-  data/        exercise library + the 12-week program (the only seeded content)
-  domain/      pure logic: progression, PRs, scheduling, statistics
-  store/       zustand store, IndexedDB persistence, rest timer
+  data/        circuit exercises + plan, strength program, exercise library, meal plan & recipes
+  domain/      pure logic: circuit progress, nutrition & fasting, progression, PRs, scheduling
+  store/       two zustand stores, IndexedDB persistence, rest timer
   components/  reusable UI (set row, exercise block, charts, sheets)
-  screens/     Today, Session, Completion, Progress, Body, Plan
+  screens/     Today, CircuitSession, CircuitCompletion, Progress, Plan, PlanEditor,
+               Meals, Recipe, Shopping, Library, Fasting, StrengthSessions, SessionView, Body
   styles/      design tokens, base, components
-  check.ts     domain checks (npm run check)
+  check.ts     domain checks (npm run check) — covers the strength domain
 ```
 
 `domain/` is free of React and of storage concerns, which is what makes it directly testable.
@@ -161,13 +192,18 @@ notifications require the app to be added to the Home Screen first.
 
 ## Deploying
 
-Pushing to the default branch builds and publishes to GitHub Pages via
-`.github/workflows/deploy.yml`.
+```bash
+npm run deploy
+```
 
-GitHub Pages serves project sites from `/<repo>/` rather than a domain root, so the workflow passes
-the repository name through as `BASE_PATH` at build time. `vite.config.ts` defaults that to `/`, and
-the manifest, service worker and notification icons all resolve their paths at runtime — so the same
-source deploys unchanged to a domain root, a custom domain, or any static host.
+Builds locally and force-pushes the result to the `gh-pages` branch, which Pages serves directly.
+That branch holds build output only — it is not part of the source history and is replaced wholesale
+on every deploy.
+
+GitHub Pages serves project sites from `/<repo>/` rather than a domain root, so the build passes the
+repository name through as `BASE_PATH`. `vite.config.ts` defaults that to `/`, and the manifest,
+service worker and notification icons all resolve their paths at runtime — so the same source
+deploys unchanged to a domain root, a custom domain, or any static host.
 
 ```bash
 BASE_PATH=/lift/ npm run build && BASE_PATH=/lift/ npm run preview   # reproduce the Pages build
@@ -175,30 +211,21 @@ BASE_PATH=/lift/ npm run build && BASE_PATH=/lift/ npm run preview   # reproduce
 
 ## Design
 
-**Direction: meet card.** The app is modelled on the artifact it replaces — a training ledger. The
-materials of the subject set the palette: iron, chalk, and calibrated plates.
+**Nocturne.** A quiet, compact dark interface: a near-neutral blue-grey ground (`#161826`), warm
+off-white text (`#E9E9ED`), soft 8px radii, and a single accent — a blurple `#9184D9` — carried as a
+line and a glow rather than a flood. Primary actions are outlined, never filled. Contrast comes from
+the tonal ramps rather than from saturation.
 
-**Three colours.** Iron for ground and surfaces, chalk `#F2EEE6` for text, primary action *and*
-completed sets, and one accent — plate red `#C4362C`, the colour of a 25 kg disc. The accent is
-reserved **exclusively for progression**: ready-to-progress, personal records, load going up. It is
-never spent on chrome, navigation or state. When red appears on a screen, it is always because the
-numbers moved. Training days are told apart by their letter mark and their type, not by hue.
+**The accent means something.** It marks progression and completion — a load going up, a box
+ticked, a round done, a fast complete. It is not spent on decoration.
 
-**One typeface, three widths.** Archivo, self-hosted as a single variable file carrying both weight
-and width axes. Display runs wide and heavy (`wdth 116 / wght 700`) so loads read as stamped into
-metal; body sits at normal width; utility labels run narrow in caps like the column headings on a
-log sheet. The pairing is by width rather than by style, which is the training thesis in
-typographic form — the same movement, loaded heavier. Numerals are tabular throughout, because
-every screen in this app is a column of numbers that has to line up.
+**Inter, self-hosted**, at medium weight. Hierarchy is size and space rather than heavier type:
+headings sit at 560 and are never bolded past it. Numerals are tabular throughout, because every
+screen in this app is a column of numbers that has to line up.
 
-**The load line.** The signature element: a lift's block history set as a ledger rather than a
-chart — the load stamped above a continuous rule, the reps and week beneath, and a red tick on the
-weeks the bar got heavier. It appears once, at the top of the selected lift in Progress, so it
-stays the thing the app is remembered by.
+**Editorial, not chrome.** Flush-left headings, generous spacing, hairline rules instead of boxes.
+Today opens on a 40px muscle-focus headline and a list you can read in seconds — not on a greeting,
+a dashboard, or a wall of cards. Almost nothing is a card; most things are just a line of type with
+room around it.
 
-**The hero is the manifest.** Today opens on the loads you are actually walking into, pulled from
-your last session, with an arrow against anything that topped its rep range — not on a greeting or
-a headline number.
-
-Everything else stays quiet: large touch targets, generous spacing, and no decoration that does not
-carry information. The app has to be readable at arm's length, mid-set, under bad gym lighting.
+The app has to be readable at arm's length, mid-set, under bad gym lighting.
