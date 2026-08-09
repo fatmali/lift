@@ -41,7 +41,7 @@
 .screen-head h1 {
   font-stretch: var(--w-display);
   font-size: 31px;
-  font-weight: 700;
+  font-weight: 560;
   letter-spacing: -0.035em;
   line-height: 1;
 }
@@ -96,6 +96,11 @@
   width: 100%;
   max-width: var(--app-w);
   height: var(--tabbar-h);
+}
+
+/* Three destinations, not four — Body sits inside Progress. */
+.tabbar__inner--three {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .tab {
@@ -184,7 +189,7 @@
 .big {
   font-stretch: var(--w-display);
   font-size: 34px;
-  font-weight: 700;
+  font-weight: 560;
   letter-spacing: -0.04em;
   line-height: 1;
 }
@@ -192,7 +197,7 @@
 .mid {
   font-stretch: var(--w-display);
   font-size: 21px;
-  font-weight: 700;
+  font-weight: 560;
   letter-spacing: -0.025em;
   line-height: 1.1;
 }
@@ -234,9 +239,20 @@
   pointer-events: none;
 }
 
+/* Nocturne outlines primary actions rather than filling them — the accent
+   is a line and a glow, never a flood. */
 .btn--primary {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.btn--primary:hover {
+  background: var(--accent-soft);
+}
+
+.btn--primary:active {
+  background: var(--accent-line);
 }
 
 .btn--ghost {
@@ -2435,6 +2451,1111 @@ textarea.input {
 
 .zone__load .display {
   font-size: 20px;
+}
+
+/* ── Today — training card (redesign) ──────────────────────────────────────
+ * "Open the app. See what you're doing today. Start." Today is a training
+ * card, not a dashboard — one focus, one action, one preview list.
+ */
+
+.trainingcard__focus {
+  font-size: 40px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.trainingcard__mode {
+  font-size: 15px;
+  color: var(--text-2);
+  margin-top: 8px;
+}
+
+.trainingcard__stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.trainingcard__cta {
+  margin-top: 22px;
+}
+
+.exlist {
+  margin-top: 34px;
+}
+
+.exlist__row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.exlist__row:last-child {
+  border-bottom: none;
+}
+
+.exlist__n {
+  font-size: 12px;
+  color: var(--text-4);
+}
+
+.exlist__name {
+  font-size: 16px;
+}
+
+.exlist__plan {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* ── Circuit — the active workout (redesign) ───────────────────────────────
+ * A round is a checklist, not a set-by-set logger. Big, touch-friendly
+ * targets for a sweaty hand between reps.
+ */
+
+.circuit {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--bg);
+  overflow-y: auto;
+  animation: session-in 0.32s var(--ease-out) both;
+}
+
+.circuit__pane {
+  padding: calc(env(safe-area-inset-top) + 26px) 20px
+    calc(env(safe-area-inset-bottom) + 30px);
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--app-w);
+  margin: 0 auto;
+}
+
+.circuit__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-3);
+  font-size: 13px;
+  align-self: flex-start;
+}
+
+.circuit__title {
+  font-size: 34px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.circuit__sub {
+  font-size: 15px;
+  color: var(--text-2);
+  margin-top: 7px;
+}
+
+.circuit__preflight-stats {
+  display: flex;
+  gap: 26px;
+  margin-top: 30px;
+}
+
+.circuit__statval {
+  font-size: 28px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+
+.circuit__statlabel {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.circuit__cta {
+  height: 60px;
+  border-radius: var(--r-sm);
+}
+
+.circuit__hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-4);
+  margin-top: 12px;
+}
+
+.circuit__roundbars {
+  display: flex;
+  gap: 5px;
+  margin-top: 14px;
+}
+
+.circuit__roundbar {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+}
+
+.circuit__roundbar--on {
+  background: var(--accent);
+}
+
+.circuit__list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.circuit__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.circuit__box {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  color: transparent;
+  transition:
+    background 0.16s var(--ease),
+    border-color 0.16s var(--ease);
+}
+
+.circuit__box:active {
+  transform: scale(0.94);
+}
+
+.circuit__box--on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.circuit__rowmain {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  padding: 10px 0;
+}
+
+.circuit__rowname {
+  font-size: 17px;
+  color: var(--text);
+}
+
+.circuit__rowname--done {
+  color: var(--text-3);
+}
+
+.circuit__chev {
+  color: var(--line-strong);
+  flex: none;
+}
+
+.circuit__end {
+  margin-top: 24px;
+  width: 100%;
+  height: 44px;
+  border-radius: var(--r-sm);
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.circuit__prescription {
+  font-size: 19px;
+  color: var(--text-2);
+  margin-top: 8px;
+}
+
+.circuit__clock {
+  margin-top: 36px;
+  text-align: center;
+}
+
+.circuit__clockval {
+  font-size: 80px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.circuit__clockval--done {
+  color: var(--accent);
+}
+
+.circuit__clocklabel {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 10px;
+}
+
+.circuit__stepper {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.circuit__stepbtn {
+  flex: none;
+  width: 68px;
+  height: 68px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  color: var(--text);
+}
+
+.circuit__stepbtn:active {
+  background: var(--surface-2);
+}
+
+.circuit__stepval {
+  font-size: 46px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.circuit__suggest {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--pr-ink);
+  margin-top: 20px;
+}
+
+.circuit__cue {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-3);
+  margin: 22px 0 0;
+  max-width: 36ch;
+}
+
+.circuit__linkback {
+  margin-top: 10px;
+  height: 38px;
+  background: none;
+  color: var(--text-4);
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  align-self: center;
+}
+
+.circuit__rest {
+  align-items: center;
+  text-align: center;
+}
+
+.circuit__restclock {
+  font-size: 96px;
+  font-weight: 560;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-top: 22px;
+}
+
+.circuit__restclock--done {
+  color: var(--accent);
+}
+
+.circuit__restbar {
+  width: 100%;
+  height: 2px;
+  background: var(--line);
+  margin-top: 30px;
+  overflow: hidden;
+}
+
+.circuit__restfill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 1s linear;
+}
+
+.circuit__nextup {
+  width: 100%;
+  text-align: left;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.circuit__nextround {
+  font-size: 19px;
+  margin-top: 6px;
+}
+
+/* ── Circuit — completion (redesign) ───────────────────────────────────── */
+
+.circuitdone {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: var(--bg);
+  overflow-y: auto;
+  padding: calc(env(safe-area-inset-top) + 40px) 20px calc(env(safe-area-inset-bottom) + 32px);
+  animation: fade 0.3s var(--ease) both;
+}
+
+.circuitdone__inner {
+  max-width: var(--app-w);
+  margin: 0 auto;
+}
+
+.circuitdone__check {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  margin-top: 8px;
+}
+
+.circuitdone__title {
+  font-size: 38px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 22px 0 0;
+  text-wrap: balance;
+}
+
+.circuitdone__sub {
+  font-size: 22px;
+  color: var(--text-2);
+  letter-spacing: -0.02em;
+}
+
+.circuitdone__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.circuitdone__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.circuitdone__rowname {
+  font-size: 15px;
+}
+
+/* ── Fuel, fasting and the day's meals ─────────────────────────────────────
+ * Nutrition lives inside Today rather than in a tab of its own — the app
+ * answers "what do I train?" and "what do I eat?" in one place.
+ */
+
+.fastcard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 34px;
+  padding: 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+}
+
+.fastcard__clock {
+  font-size: 26px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  margin-top: 3px;
+}
+
+.fastcard__done {
+  color: var(--accent);
+  flex: none;
+}
+
+.meter {
+  height: 3px;
+  background: var(--line);
+  border-radius: 2px;
+  margin-top: 9px;
+  overflow: hidden;
+}
+
+.meter__fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s var(--ease);
+}
+
+.meallist {
+  display: flex;
+  flex-direction: column;
+  margin-top: 14px;
+}
+
+.meallist__row {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.meallist__time {
+  font-size: 13px;
+  color: var(--text-4);
+}
+
+.meallist__name {
+  font-size: 15px;
+}
+
+.meallist__name--done {
+  color: var(--text-3);
+  text-decoration: line-through;
+}
+
+.meallist__tick {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  color: transparent;
+  transition:
+    background 0.16s var(--ease),
+    border-color 0.16s var(--ease);
+}
+
+.meallist__tick--on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.today__insight {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-2);
+  margin: 34px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* ── Progress — the story, not fourteen charts ───────────────────────────── */
+
+.movelist {
+  display: flex;
+  flex-direction: column;
+}
+
+.movelist__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.movelist__up {
+  color: var(--accent);
+  flex: none;
+}
+
+.movelist__flat {
+  color: var(--text-3);
+  flex: none;
+}
+
+.movelist__name {
+  flex: 1;
+  font-size: 15px;
+}
+
+.movelist__val {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.consistency__count {
+  font-size: 36px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+}
+
+.consistency__grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 4px;
+  margin-top: 14px;
+}
+
+.consistency__cell {
+  height: 26px;
+  border-radius: 4px;
+  background: var(--line);
+}
+
+.consistency__cell--on {
+  background: var(--accent-soft);
+}
+
+.consistency__cell--next {
+  background: transparent;
+  border: 1px solid var(--accent);
+}
+
+.balance {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.balance__head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  margin-bottom: 6px;
+}
+
+.photostrip {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.photostrip__slot,
+.photostrip__add {
+  flex: 1;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin: 0;
+  position: relative;
+  background: var(--surface-2);
+}
+
+.photostrip__slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photostrip__cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 5px 7px;
+  font-size: 10.5px;
+  color: var(--text-2);
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+}
+
+.photostrip__add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: none;
+  border: 1px dashed var(--line-strong);
+  color: var(--text-4);
+  font-size: 11px;
+}
+
+/* ── Plan and its editor ─────────────────────────────────────────────────── */
+
+.planlist {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+.planlist__row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.planlist__day {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+.planlist__focus {
+  display: block;
+  font-size: 16.5px;
+}
+
+.planlist__meta {
+  display: block;
+  font-size: 13px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.planlist__chev {
+  color: var(--line-strong);
+}
+
+.linklist {
+  display: flex;
+  flex-direction: column;
+}
+
+.linklist__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.linklist__name {
+  flex: 1;
+  font-size: 16px;
+}
+
+.editor__done {
+  color: var(--accent-3);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.editor__focus {
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--text);
+  font-size: 23px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  padding: 0 0 12px;
+  outline: none;
+}
+
+.editor__focus:focus {
+  border-bottom-color: var(--accent);
+}
+
+.daypicker {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.daypicker__day {
+  height: 46px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--text-3);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.daypicker__day--on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.daypicker__day:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.modepick {
+  display: flex;
+  gap: 8px;
+}
+
+.modepick__opt {
+  flex: 1;
+  height: 52px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.modepick__opt--on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.steppers {
+  display: flex;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.steppers__col {
+  flex: 1;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepper__btn {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--r-sm);
+  background: none;
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+}
+
+.stepper__btn:active {
+  background: var(--surface-2);
+}
+
+.stepper__val {
+  flex: 1;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 560;
+}
+
+.editor__exlist {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor__exrow {
+  display: grid;
+  grid-template-columns: 26px 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.editor__exname {
+  font-size: 16px;
+}
+
+.editor__remove {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  color: var(--text-4);
+  display: grid;
+  place-items: center;
+}
+
+.editor__remove:hover {
+  color: var(--text);
+}
+
+.chiprow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 13px;
+  border-radius: var(--r-sm);
+  background: none;
+  border: 1px solid var(--line-strong);
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.chip--static {
+  pointer-events: none;
+}
+
+/* ── Meals, recipe and shopping ──────────────────────────────────────────── */
+
+.mealday {
+  margin-top: 28px;
+}
+
+.mealday__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.mealday__today {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.mealday__tag {
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+.mealday__tag--training {
+  color: var(--accent);
+}
+
+.mealrow {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mealrow__main {
+  text-align: left;
+  min-width: 0;
+}
+
+.mealrow__main:disabled {
+  cursor: default;
+}
+
+.mealrow__name {
+  display: block;
+  font-size: 15.5px;
+}
+
+.recipe__title {
+  font-size: 34px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 28px 0 0;
+  text-wrap: balance;
+}
+
+.recipe__stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 22px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.recipe__statval {
+  font-size: 25px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+
+.recipe__ingredients {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px 18px;
+  font-size: 14.5px;
+}
+
+.recipe__method {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recipe__method li {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.recipe__step {
+  color: var(--text-4);
+  font-size: 12.5px;
+}
+
+.recipe__swaps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.recipe__swaprow {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.recipe__swapfrom {
+  width: 74px;
+  flex: none;
+  color: var(--text-3);
+}
+
+.recipe__swapto {
+  color: var(--text-2);
+}
+
+.shopgroup {
+  margin-top: 26px;
+}
+
+.shopgroup__head {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.shoprow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.shoprow__box {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  border: 1px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  color: transparent;
+}
+
+.shoprow__box--on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.shoprow__name {
+  flex: 1;
+  font-size: 15.5px;
+}
+
+.shoprow__name--on {
+  color: var(--text-4);
+  text-decoration: line-through;
+}
+
+/* ── Exercise library ────────────────────────────────────────────────────── */
+
+.libolist {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+.libo {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.libo__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.libo__name {
+  font-size: 16.5px;
+}
+
+.libo__meta {
+  display: flex;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+.libo__cue {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-4);
+  margin: 8px 0 0;
+  max-width: 40ch;
 }
 
 .zone__loadedit {

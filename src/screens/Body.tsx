@@ -28,7 +28,7 @@ const POSES: { value: Pose; label: string }[] = [
   { value: 'back', label: 'Back' },
 ];
 
-export function Body() {
+export function Body({ onBack }: { onBack?: () => void }) {
   const store = useStore();
   const [addOpen, setAddOpen] = useState(false);
   const [cardioOpen, setCardioOpen] = useState(false);
@@ -67,7 +67,13 @@ export function Body() {
 
   return (
     <div className="screen">
-      <header className="screen-head">
+      {onBack ? (
+        <button type="button" className="circuit__back" onClick={onBack}>
+          <Icon name="back" size={15} /> Progress
+        </button>
+      ) : null}
+
+      <header className="screen-head" style={onBack ? { marginTop: 24 } : undefined}>
         <div>
           <div className="screen-head__eyebrow">Optional context</div>
           <h1>Body</h1>
